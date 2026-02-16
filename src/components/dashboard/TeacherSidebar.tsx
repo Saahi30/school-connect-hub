@@ -12,6 +12,7 @@ import {
   UserCheck,
   User,
   LogOut,
+  Wand2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,15 @@ const navItems = [
   { icon: User, label: 'My Profile', path: '/teacher/profile' },
 ];
 
+const aiNavItems = [
+  { icon: Wand2, label: 'Question Paper', path: '/teacher/question-paper' },
+];
+
+const demoAiNavItems = aiNavItems.map(item => ({
+  ...item,
+  path: item.path.replace('/teacher/', '/demo/teacher/'),
+}));
+
 const demoNavItems = navItems.map(item => ({
   ...item,
   path: item.path.replace('/teacher/', '/demo/teacher/'),
@@ -45,7 +55,7 @@ export function TeacherSidebar({ isDemo = false }: TeacherSidebarProps) {
   const location = useLocation();
   const { signOut } = useAuth();
   const { exitDemoMode } = useDemo();
-  
+
   const items = isDemo ? demoNavItems : navItems;
   const basePath = isDemo ? '/demo/teacher' : '/teacher';
 
@@ -75,11 +85,11 @@ export function TeacherSidebar({ isDemo = false }: TeacherSidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {items.map((item) => {
-          const isActive = location.pathname === item.path || 
+          const isActive = location.pathname === item.path ||
             (item.path === `${basePath}/dashboard` && location.pathname === basePath);
-          
+
           return (
             <Link
               key={item.path}
@@ -96,6 +106,31 @@ export function TeacherSidebar({ isDemo = false }: TeacherSidebarProps) {
             </Link>
           );
         })}
+
+        {/* AI Assistant Section */}
+        <div className="pt-3 mt-3 border-t">
+          <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/60">
+            AI Assistant
+          </p>
+          {(isDemo ? demoAiNavItems : aiNavItems).map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={cn(
+                  'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
+                  isActive
+                    ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white'
+                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                )}
+              >
+                <item.icon className="h-4 w-4" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
       </nav>
 
       {/* Footer */}

@@ -13,6 +13,7 @@ import { TeacherAnnouncementsPage } from '@/components/teacher/TeacherAnnounceme
 import { TeacherClassesPage } from '@/components/teacher/TeacherClassesPage';
 import { TeacherLeavePage } from '@/components/teacher/TeacherLeavePage';
 import { TeacherLeaveApprovalsPage } from '@/components/teacher/TeacherLeaveApprovalsPage';
+import { QuestionPaperPage } from '@/components/teacher/QuestionPaperPage';
 
 export default function TeacherDashboard() {
   return (
@@ -29,6 +30,7 @@ export default function TeacherDashboard() {
         <Route path="announcements" element={<TeacherAnnouncementsPage />} />
         <Route path="leave" element={<TeacherLeavePage />} />
         <Route path="leave-approvals" element={<TeacherLeaveApprovalsPage />} />
+        <Route path="question-paper" element={<QuestionPaperPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="dashboard" replace />} />
       </Routes>
