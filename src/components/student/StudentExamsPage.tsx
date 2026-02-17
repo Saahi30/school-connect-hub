@@ -12,64 +12,7 @@ interface StudentExamsPageProps {
   isDemo?: boolean;
 }
 
-// Demo data for exams
-const demoExams = [
-  {
-    id: '1',
-    exam_date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    start_time: '09:00',
-    end_time: '12:00',
-    max_marks: 100,
-    room: 'Hall A',
-    status: 'scheduled',
-    exam_type: { name: 'Mid-Term' },
-    subject: { name: 'Mathematics', code: 'MATH' },
-  },
-  {
-    id: '2',
-    exam_date: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    start_time: '09:00',
-    end_time: '12:00',
-    max_marks: 100,
-    room: 'Hall B',
-    status: 'scheduled',
-    exam_type: { name: 'Mid-Term' },
-    subject: { name: 'Science', code: 'SCI' },
-  },
-  {
-    id: '3',
-    exam_date: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    start_time: '10:00',
-    end_time: '13:00',
-    max_marks: 100,
-    room: 'Hall A',
-    status: 'scheduled',
-    exam_type: { name: 'Mid-Term' },
-    subject: { name: 'English', code: 'ENG' },
-  },
-  {
-    id: '4',
-    exam_date: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    start_time: '09:00',
-    end_time: '11:00',
-    max_marks: 80,
-    room: 'Hall C',
-    status: 'scheduled',
-    exam_type: { name: 'Mid-Term' },
-    subject: { name: 'Hindi', code: 'HIN' },
-  },
-  {
-    id: '5',
-    exam_date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    start_time: '10:00',
-    end_time: '12:00',
-    max_marks: 80,
-    room: 'Lab 1',
-    status: 'scheduled',
-    exam_type: { name: 'Mid-Term' },
-    subject: { name: 'Computer Science', code: 'CS' },
-  },
-];
+// Demo data removed to ensure real data is used
 
 export function StudentExamsPage({ isDemo = false }: StudentExamsPageProps) {
   const { user } = useAuth();
@@ -97,7 +40,7 @@ export function StudentExamsPage({ isDemo = false }: StudentExamsPageProps) {
     queryKey: ['student-exams', studentData?.class_id],
     queryFn: async () => {
       if (!studentData?.class_id) return [];
-      
+
       const { data, error } = await supabase
         .from('exams')
         .select(`
@@ -108,14 +51,14 @@ export function StudentExamsPage({ isDemo = false }: StudentExamsPageProps) {
         .eq('class_id', studentData.class_id)
         .gte('exam_date', new Date().toISOString().split('T')[0])
         .order('exam_date', { ascending: true });
-      
+
       if (error) throw error;
       return data;
     },
     enabled: !!studentData?.class_id && !effectiveDemo,
   });
 
-  const displayExams = effectiveDemo ? demoExams : exams;
+  const displayExams = exams || [];
 
   const getExamStatus = (examDate: string) => {
     const date = new Date(examDate);
@@ -204,9 +147,15 @@ export function StudentExamsPage({ isDemo = false }: StudentExamsPageProps) {
         </CardHeader>
         <CardContent>
           {upcomingExams.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              No upcoming exams scheduled
-            </p>
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                <Calendar className="h-8 w-8 text-muted-foreground opacity-50" />
+              </div>
+              <h3 className="text-lg font-medium">No Exams Scheduled</h3>
+              <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                Your examination schedule is empty. New exams will appear here once scheduled by the administration.
+              </p>
+            </div>
           ) : (
             <div className="space-y-4">
               {upcomingExams.map((exam) => {

@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { StudentSidebar } from '@/components/dashboard/StudentSidebar';
 import { StudentDashboardContent } from '@/components/student/StudentDashboardContent';
+import { StudentResourcesPage } from '@/components/student/StudentResourcesPage';
 import { ProfilePage } from '@/components/profile/ProfilePage';
 import { ComingSoonPage } from '@/components/shared/ComingSoonPage';
 import { StudentAttendancePage } from '@/components/student/StudentAttendancePage';
@@ -33,7 +34,7 @@ export default function StudentDashboard() {
         <Route path="transport" element={<StudentTransportPage />} />
         <Route path="announcements" element={<StudentAnnouncementsPage />} />
         <Route path="leave" element={<StudentLeavePage />} />
-        <Route path="resources" element={<ComingSoonPage title="Resources" />} />
+        <Route path="resources" element={<StudentResourcesPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="dashboard" replace />} />
       </Routes>

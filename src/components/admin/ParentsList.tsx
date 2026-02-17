@@ -30,8 +30,20 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useAllParents } from '@/hooks/useAdminStats';
-import { Link, Loader2, Trash2 } from 'lucide-react';
+import { Link, Loader2, Trash2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAdminDeleteUser } from '@/hooks/useAdminUserManagement';
+import { EditUserDialog } from './EditUserDialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface ParentsListProps {
   searchQuery: string;
@@ -118,7 +130,7 @@ function useLinkedChildrenForParent(parentId: string | null) {
           studentId: link.student_id,
           relationship: link.relationship,
           studentName: profiles?.find(p => p.user_id === student?.user_id)?.full_name || 'Unknown',
-          className: student?.class_id ? 
+          className: student?.class_id ?
             (() => {
               const cls = classes?.find(c => c.id === student.class_id);
               return cls ? `${cls.name} - ${cls.section}` : '-';
@@ -135,11 +147,15 @@ export function ParentsList({ searchQuery }: ParentsListProps) {
   const queryClient = useQueryClient();
   const { data: parents, isLoading, error } = useAllParents();
   const { data: allStudents } = useAllStudentsForLinking();
-  
+
   const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [relationship, setRelationship] = useState('parent');
+
+  const deleteUser = useAdminDeleteUser();
+  const [editingParent, setEditingParent] = useState<any>(null);
+  const [deletingParentId, setDeletingParentId] = useState<string | null>(null);
 
   const { data: linkedChildren, isLoading: childrenLoading } = useLinkedChildrenForParent(selectedParentId);
 
@@ -270,7 +286,7 @@ export function ParentsList({ searchQuery }: ParentsListProps) {
                 <TableHead>Contact</TableHead>
                 <TableHead>Occupation</TableHead>
                 <TableHead>Relationship</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -294,14 +310,32 @@ export function ParentsList({ searchQuery }: ParentsListProps) {
                   <TableCell>{parent.occupation || '-'}</TableCell>
                   <TableCell className="capitalize">{parent.relationship || '-'}</TableCell>
                   <TableCell>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleOpenLinkDialog(parent.id)}
-                    >
-                      <Link className="h-4 w-4 mr-1" />
-                      Link Child
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleOpenLinkDialog(parent.id)}
+                      >
+                        <Link className="h-4 w-4 mr-1" />
+                        Link Child
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setEditingParent(parent)}
+                        className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeletingParentId(parent.user_id)}
+                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -357,7 +391,7 @@ export function ParentsList({ searchQuery }: ParentsListProps) {
 
             <div className="border-t pt-4 space-y-4">
               <Label className="text-sm font-medium">Link New Child</Label>
-              
+
               <div className="space-y-2">
                 <Label>Select Student</Label>
                 <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
@@ -367,7 +401,7 @@ export function ParentsList({ searchQuery }: ParentsListProps) {
                   <SelectContent>
                     {availableStudents.map((student) => (
                       <SelectItem key={student.id} value={student.id}>
-                        {student.profile?.full_name || 'Unknown'} 
+                        {student.profile?.full_name || 'Unknown'}
                         {student.class ? ` (${student.class.name}-${student.class.section})` : ''}
                         {student.roll_number ? ` - Roll: ${student.roll_number}` : ''}
                       </SelectItem>
@@ -409,6 +443,38 @@ export function ParentsList({ searchQuery }: ParentsListProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      <EditUserDialog
+        open={!!editingParent}
+        onOpenChange={(open) => !open && setEditingParent(null)}
+        user={editingParent}
+        userType="parent"
+      />
+
+      <AlertDialog open={!!deletingParentId} onOpenChange={(open) => !open && setDeletingParentId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove the parent's profile and data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deletingParentId) {
+                  deleteUser.mutate(deletingParentId);
+                  setDeletingParentId(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

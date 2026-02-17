@@ -13,6 +13,7 @@ import { HomeworkPage } from '@/components/teacher/HomeworkPage';
 import { TeacherAnnouncementsPage } from '@/components/teacher/TeacherAnnouncementsPage';
 import { TeacherLeavePage } from '@/components/teacher/TeacherLeavePage';
 import { TeacherSchedulePage } from '@/components/teacher/TeacherSchedulePage';
+import { QuestionPaperPage } from '@/components/teacher/QuestionPaperPage';
 
 export default function TeacherDemo() {
   const { setDemoMode } = useDemo();
@@ -34,6 +35,7 @@ export default function TeacherDemo() {
           <Route path="homework" element={<HomeworkPage />} />
           <Route path="announcements" element={<TeacherAnnouncementsPage />} />
           <Route path="leaves" element={<TeacherLeavePage />} />
+          <Route path="question-paper" element={<QuestionPaperPage />} />
           <Route path="profile" element={<ComingSoonPage title="My Profile" />} />
         </Routes>
       </DashboardLayout>
@@ -41,3 +43,4 @@ export default function TeacherDemo() {
     </>
   );
 }
+

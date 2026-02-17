@@ -15,9 +15,11 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/contexts/DemoContext';
 import { demoParent } from '@/lib/demo-data';
+import { useUnreadCount } from '@/hooks/useConversations';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/parent/dashboard' },
@@ -28,7 +30,7 @@ const navItems = [
   { icon: Library, label: 'Library', path: '/parent/library' },
   { icon: Bus, label: 'Transport', path: '/parent/transport' },
   { icon: CalendarDays, label: 'Leave Requests', path: '/parent/leaves' },
-  { icon: MessageSquare, label: 'Messages', path: '/parent/messages' },
+  { icon: MessageSquare, label: 'Messages', path: '/parent/messages', hasBadge: true },
   { icon: User, label: 'Profile', path: '/parent/profile' },
 ];
 
@@ -45,7 +47,8 @@ export function ParentSidebar({ isDemo = false }: ParentSidebarProps) {
   const location = useLocation();
   const { signOut } = useAuth();
   const { exitDemoMode } = useDemo();
-  
+  const { data: unreadCount } = useUnreadCount();
+
   const items = isDemo ? demoNavItems : navItems;
   const basePath = isDemo ? '/demo/parent' : '/parent';
 
@@ -77,9 +80,10 @@ export function ParentSidebar({ isDemo = false }: ParentSidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {items.map((item) => {
-          const isActive = location.pathname === item.path || 
+          const isActive = location.pathname === item.path ||
             (item.path === `${basePath}/dashboard` && location.pathname === basePath);
-          
+          const showBadge = 'hasBadge' in item && item.hasBadge && (unreadCount ?? 0) > 0;
+
           return (
             <Link
               key={item.path}
@@ -92,7 +96,12 @@ export function ParentSidebar({ isDemo = false }: ParentSidebarProps) {
               )}
             >
               <item.icon className="h-4 w-4" />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {showBadge && (
+                <Badge className="h-5 min-w-[20px] rounded-full bg-red-500 hover:bg-red-500 text-white text-[10px] font-bold px-1.5">
+                  {unreadCount! > 99 ? '99+' : unreadCount}
+                </Badge>
+              )}
             </Link>
           );
         })}

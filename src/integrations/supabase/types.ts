@@ -480,6 +480,27 @@ export type Database = {
           },
         ]
       }
+      conversations: {
+        Row: {
+          id: string
+          parent_id: string
+          teacher_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          parent_id: string
+          teacher_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          parent_id?: string
+          teacher_id?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       classes: {
         Row: {
           academic_year: string
@@ -1066,6 +1087,7 @@ export type Database = {
       messages: {
         Row: {
           content: string
+          conversation_id: string | null
           created_at: string
           id: string
           read_at: string | null
@@ -1076,6 +1098,7 @@ export type Database = {
         }
         Insert: {
           content: string
+          conversation_id?: string | null
           created_at?: string
           id?: string
           read_at?: string | null
@@ -1086,6 +1109,7 @@ export type Database = {
         }
         Update: {
           content?: string
+          conversation_id?: string | null
           created_at?: string
           id?: string
           read_at?: string | null
@@ -1094,7 +1118,15 @@ export type Database = {
           subject?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       parent_student: {
         Row: {
