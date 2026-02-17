@@ -12,6 +12,21 @@ import {
 } from '@/components/ui/table';
 import { useAllTeachers } from '@/hooks/useAdminStats';
 import { format } from 'date-fns';
+import { Pencil, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { EditUserDialog } from './EditUserDialog';
+import { useAdminDeleteUser } from '@/hooks/useAdminUserManagement';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
 
 interface TeachersListProps {
   searchQuery: string;
@@ -19,6 +34,9 @@ interface TeachersListProps {
 
 export function TeachersList({ searchQuery }: TeachersListProps) {
   const { data: teachers, isLoading, error } = useAllTeachers();
+  const deleteUser = useAdminDeleteUser();
+  const [editingTeacher, setEditingTeacher] = useState<any>(null);
+  const [deletingTeacherId, setDeletingTeacherId] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -91,6 +109,7 @@ export function TeachersList({ searchQuery }: TeachersListProps) {
               <TableHead>Designation</TableHead>
               <TableHead>Qualification</TableHead>
               <TableHead>Joining Date</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -124,11 +143,63 @@ export function TeachersList({ searchQuery }: TeachersListProps) {
                     ? format(new Date(teacher.joining_date), 'MMM d, yyyy')
                     : '-'}
                 </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setEditingTeacher(teacher)}
+                      className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setDeletingTeacherId(teacher.user_id)}
+                      className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </CardContent>
+
+      <EditUserDialog
+        open={!!editingTeacher}
+        onOpenChange={(open) => !open && setEditingTeacher(null)}
+        user={editingTeacher}
+        userType="teacher"
+      />
+
+      <AlertDialog open={!!deletingTeacherId} onOpenChange={(open) => !open && setDeletingTeacherId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove the teacher's profile and data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deletingTeacherId) {
+                  deleteUser.mutate(deletingTeacherId);
+                  setDeletingTeacherId(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

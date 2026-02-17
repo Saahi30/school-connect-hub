@@ -11,6 +11,21 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useAllStudents } from '@/hooks/useAdminStats';
+import { Pencil, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { EditUserDialog } from './EditUserDialog';
+import { useAdminDeleteUser } from '@/hooks/useAdminUserManagement';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
 
 interface StudentsListProps {
   searchQuery: string;
@@ -18,6 +33,9 @@ interface StudentsListProps {
 
 export function StudentsList({ searchQuery }: StudentsListProps) {
   const { data: students, isLoading, error } = useAllStudents();
+  const deleteUser = useAdminDeleteUser();
+  const [editingStudent, setEditingStudent] = useState<any>(null);
+  const [deletingStudentId, setDeletingStudentId] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -90,6 +108,7 @@ export function StudentsList({ searchQuery }: StudentsListProps) {
               <TableHead>Roll No.</TableHead>
               <TableHead>Admission No.</TableHead>
               <TableHead>Contact</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -121,11 +140,63 @@ export function StudentsList({ searchQuery }: StudentsListProps) {
                 <TableCell>{student.roll_number || '-'}</TableCell>
                 <TableCell>{student.admission_number || '-'}</TableCell>
                 <TableCell>{student.profile?.phone || '-'}</TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setEditingStudent(student)}
+                      className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setDeletingStudentId(student.user_id)}
+                      className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </CardContent>
+
+      <EditUserDialog
+        open={!!editingStudent}
+        onOpenChange={(open) => !open && setEditingStudent(null)}
+        user={editingStudent}
+        userType="student"
+      />
+
+      <AlertDialog open={!!deletingStudentId} onOpenChange={(open) => !open && setDeletingStudentId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove the student's profile and data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deletingStudentId) {
+                  deleteUser.mutate(deletingStudentId);
+                  setDeletingStudentId(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

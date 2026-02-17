@@ -12,6 +12,7 @@ import { ParentLeavePage } from '@/components/parent/ParentLeavePage';
 import { ParentMessagesPage } from '@/components/parent/ParentMessagesPage';
 import { ParentLibraryPage } from '@/components/parent/ParentLibraryPage';
 import { ParentTransportPage } from '@/components/parent/ParentTransportPage';
+import { MyChildrenPage } from '@/components/parent/MyChildrenPage';
 
 export default function ParentDashboard() {
   return (
