@@ -175,7 +175,7 @@ export const HeroSection = () => {
         </div>
 
         <section className="overflow-hidden bg-white dark:bg-transparent">
-          <div className="relative mx-auto max-w-5xl px-6 pt-10 pb-28 lg:pt-14 lg:pb-32">
+          <div className="relative mx-auto max-w-5xl px-6 pt-24 pb-28 md:pt-10 lg:pt-14 lg:pb-32">
             <motion.div
               className="relative z-10 mx-auto max-w-2xl text-center"
               variants={containerVariants}
