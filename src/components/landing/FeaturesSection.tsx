@@ -117,22 +117,28 @@ const cardVariants: Variants = {
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="relative py-24 bg-white border-t border-dashed overflow-hidden">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[40rem] bg-[radial-gradient(60%_60%_at_50%_0%,rgba(139,92,246,0.05),transparent_70%)]"
-      />
+    <section
+      id="features"
+      className="relative py-24 overflow-hidden"
+      style={{
+        background:
+          "linear-gradient(to bottom, #E8F2F8 0%, #F0EEF8 25%, #F8F0F4 50%, #FCF4F6 80%, #FFFFFF 100%)",
+      }}
+    >
 
       <div className="container relative mx-auto px-4">
-        <div className="text-center mb-16 max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-2 rounded-full border border-dashed bg-muted/40 px-3.5 py-1 mb-5 text-[11px] font-medium tracking-[0.12em] uppercase text-muted-foreground">
+        <div className="text-center mb-20 max-w-2xl mx-auto">
+          <div className="inline-flex items-center gap-3 mb-6 text-[11px] font-medium tracking-[0.24em] uppercase text-indigo-600">
+            <span className="h-px w-8 bg-indigo-200" />
             Features
+            <span className="h-px w-8 bg-indigo-200" />
           </div>
-          <h2 className="text-4xl md:text-5xl font-medium tracking-tight leading-[1.1] mb-4">
-            Everything your school needs
+          <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight leading-[1.05] mb-5 text-slate-900">
+            Everything your school{" "}
+            <span className="italic text-indigo-600">needs</span>
           </h2>
-          <p className="text-muted-foreground text-base md:text-lg leading-relaxed max-w-xl mx-auto">
-            A comprehensive suite designed specifically for modern Indian schools.
+          <p className="text-slate-500 text-base md:text-lg leading-relaxed max-w-lg mx-auto">
+            A thoughtful suite, built for the rhythms of modern Indian schools.
           </p>
         </div>
 

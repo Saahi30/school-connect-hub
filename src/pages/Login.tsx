@@ -1,56 +1,78 @@
-import { GraduationCap, Users, BookOpen, Shield, ArrowRight, Play, ArrowLeft } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Logo } from '@/components/blocks/hero-section-9';
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import {
+  GraduationCap, Users, BookOpen, Shield, ArrowRight, Play, Sparkles,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MarketingNav } from "@/components/landing/MarketingNav";
+import { MarketingFooter } from "@/components/landing/MarketingFooter";
 
-const userTypes = [
+interface RolePortal {
+  type: string;
+  title: string;
+  description: string;
+  Icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  accent: string;
+  accentText: string;
+  accentBorder: string;
+  accentBg: string;
+  loginPath: string;
+  demoPath: string;
+  features: string[];
+}
+
+const userTypes: RolePortal[] = [
   {
-    type: 'student',
-    title: 'Student',
-    description: 'Access your attendance, marks, timetable, and homework',
-    icon: GraduationCap,
-    accent: 'text-orange-500',
-    accentBg: 'bg-orange-500/10',
-    accentDot: 'bg-orange-500',
-    loginPath: '/login/student',
-    demoPath: '/demo/student',
-    features: ['View Attendance', 'Check Marks', 'See Timetable', 'Submit Homework'],
+    type: "student",
+    title: "Student",
+    description: "Attendance, marks, timetable, and homework — all in one place.",
+    Icon: GraduationCap,
+    accent: "from-orange-500 to-amber-500",
+    accentText: "text-orange-600",
+    accentBorder: "hover:border-orange-300 hover:shadow-orange-100/60",
+    accentBg: "bg-orange-50",
+    loginPath: "/login/student",
+    demoPath: "/demo/student",
+    features: ["View attendance", "Check marks", "Submit homework"],
   },
   {
-    type: 'parent',
-    title: 'Parent',
-    description: "Track your child's progress, fees, and communicate with teachers",
-    icon: Users,
-    accent: 'text-green-600',
-    accentBg: 'bg-green-600/10',
-    accentDot: 'bg-green-600',
-    loginPath: '/login/parent',
-    demoPath: '/demo/parent',
-    features: ['Child Progress', 'Fee Management', 'Teacher Contact', 'Announcements'],
+    type: "parent",
+    title: "Parent",
+    description: "Track your child's progress, fees, and school updates.",
+    Icon: Users,
+    accent: "from-emerald-500 to-teal-600",
+    accentText: "text-emerald-700",
+    accentBorder: "hover:border-emerald-300 hover:shadow-emerald-100/60",
+    accentBg: "bg-emerald-50",
+    loginPath: "/login/parent",
+    demoPath: "/demo/parent",
+    features: ["Daily progress", "Pay fees", "Message teachers"],
   },
   {
-    type: 'teacher',
-    title: 'Teacher',
-    description: 'Manage classes, mark attendance, and upload assignments',
-    icon: BookOpen,
-    accent: 'text-purple-600',
-    accentBg: 'bg-purple-600/10',
-    accentDot: 'bg-purple-600',
-    loginPath: '/login/teacher',
-    demoPath: '/demo/teacher',
-    features: ['Mark Attendance', 'Upload Marks', 'Post Homework', 'Class Management'],
+    type: "teacher",
+    title: "Teacher",
+    description: "Mark attendance, post homework, and run your classroom.",
+    Icon: BookOpen,
+    accent: "from-purple-500 to-indigo-600",
+    accentText: "text-purple-700",
+    accentBorder: "hover:border-purple-300 hover:shadow-purple-100/60",
+    accentBg: "bg-purple-50",
+    loginPath: "/login/teacher",
+    demoPath: "/demo/teacher",
+    features: ["Class attendance", "Upload marks", "Lesson plans"],
   },
   {
-    type: 'admin',
-    title: 'Admin',
-    description: 'Complete school administration and user management',
-    icon: Shield,
-    accent: 'text-blue-600',
-    accentBg: 'bg-blue-600/10',
-    accentDot: 'bg-blue-600',
-    loginPath: '/login/admin',
-    demoPath: '/demo/admin',
-    features: ['User Management', 'Class Setup', 'Reports', 'System Settings'],
+    type: "admin",
+    title: "Admin",
+    description: "Run the entire school — users, fees, reports, and beyond.",
+    Icon: Shield,
+    accent: "from-blue-500 to-cyan-600",
+    accentText: "text-blue-700",
+    accentBorder: "hover:border-blue-300 hover:shadow-blue-100/60",
+    accentBg: "bg-blue-50",
+    loginPath: "/login/admin",
+    demoPath: "/demo/admin",
+    features: ["User management", "Reports & analytics", "System settings"],
   },
 ];
 
@@ -59,86 +81,142 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <header className="border-b border-dashed">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" aria-label="KnctED home" className="flex items-center">
-            <Logo />
-          </Link>
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to home
-          </Link>
-        </div>
-      </header>
+      <div
+        className="relative"
+        style={{ background: "linear-gradient(160deg, #6366F1 0%, #7C6CF0 35%, #8B6FE8 65%, #A78BE0 100%)" }}
+      >
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-[0.22]"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,255,255,0.55) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.55) 1px, transparent 1px)",
+            backgroundSize: "64px 64px",
+          }}
+        />
+        <MarketingNav variant="light" />
 
-      <main className="flex-1 flex items-center py-20">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-16 max-w-2xl mx-auto">
-            <div className="inline-flex items-center gap-2 rounded-full border border-dashed bg-muted/40 px-3.5 py-1 mb-5 text-[11px] font-medium tracking-[0.12em] uppercase text-muted-foreground">
-              Portals
+        <section className="relative z-10 m-auto max-w-4xl px-6 py-14 lg:py-20 text-center">
+          <motion.span
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 rounded-full border border-dashed border-white/40 bg-white/10 backdrop-blur-sm px-3.5 py-1 mb-6 text-[11px] font-medium tracking-[0.12em] uppercase text-white/90"
+          >
+            <Sparkles className="h-3 w-3" /> Welcome back
+          </motion.span>
+          <motion.h1
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="font-display text-balance text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight leading-[1.05] text-white"
+          >
+            Pick the portal that's
+            <br />
+            <span className="bg-gradient-to-r from-amber-200 via-orange-200 to-pink-200 bg-clip-text text-transparent italic">
+              built for you
+            </span>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mx-auto mt-5 max-w-lg text-base md:text-lg text-white/85 leading-relaxed"
+          >
+            Sign in to your role-specific dashboard, or take a no-login demo for a tour.
+          </motion.p>
+        </section>
+      </div>
+
+      <main className="relative -mt-12 lg:-mt-16 m-auto w-full max-w-6xl px-6 pb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {userTypes.map((u, i) => (
+            <motion.div
+              key={u.type}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 + i * 0.06, duration: 0.35, ease: "easeOut" }}
+              className={`group relative flex flex-col rounded-2xl border border-slate-200 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${u.accentBorder}`}
+            >
+              <div className={`absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r ${u.accent} opacity-0 group-hover:opacity-100 transition`} />
+
+              <div className="flex items-start justify-between mb-5">
+                <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${u.accent} shadow-md`}>
+                  <u.Icon className="h-6 w-6 text-white" strokeWidth={2} />
+                </div>
+                <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${u.accentBg} ${u.accentText}`}>
+                  Portal
+                </span>
+              </div>
+
+              <h3 className="font-display text-xl font-medium tracking-tight text-slate-900 mb-1.5">
+                {u.title}
+              </h3>
+              <p className="text-sm text-slate-600 leading-relaxed mb-5">
+                {u.description}
+              </p>
+
+              <ul className="space-y-1.5 mb-6 flex-1">
+                {u.features.map((f) => (
+                  <li key={f} className="flex items-center gap-2 text-sm text-slate-600">
+                    <span className={`h-1 w-1 rounded-full bg-gradient-to-br ${u.accent}`} />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="space-y-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => navigate(u.loginPath)}
+                  className={`w-full rounded-full bg-gradient-to-r ${u.accent} text-white hover:brightness-110 shadow-md`}
+                >
+                  Sign in
+                  <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(u.demoPath)}
+                  className="w-full rounded-full border-slate-200 text-slate-700 hover:bg-slate-50"
+                >
+                  <Play className="h-3.5 w-3.5 mr-1.5" />
+                  Try demo
+                </Button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="mt-10 grid lg:grid-cols-2 gap-4">
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 flex items-center justify-between gap-4">
+            <div>
+              <p className="font-medium text-slate-900 text-sm">First time at KnctED?</p>
+              <p className="text-xs text-slate-500 mt-0.5">Schools join through a guided demo with our team.</p>
             </div>
-            <h1 className="text-4xl md:text-5xl font-medium tracking-tight leading-[1.1] mb-4">
-              Choose your portal
-            </h1>
-            <p className="text-muted-foreground text-base md:text-lg leading-relaxed max-w-lg mx-auto">
-              Login to your account or explore the demo to see how KnctED fits your school.
-            </p>
+            <Button asChild size="sm" className="rounded-full shrink-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700">
+              <Link to="/book-demo">
+                Book a demo <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              </Link>
+            </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
-            {userTypes.map((userType) => {
-              const Icon = userType.icon;
-              return (
-                <div
-                  key={userType.type}
-                  className="group relative flex flex-col rounded-xl border bg-white p-6 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:border-foreground/20"
-                >
-                  <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${userType.accentBg} mb-5`}>
-                    <Icon className={`h-4 w-4 ${userType.accent}`} strokeWidth={2} />
-                  </div>
-
-                  <h3 className="text-[17px] font-medium tracking-tight mb-1.5">{userType.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-5">
-                    {userType.description}
-                  </p>
-
-                  <ul className="text-sm text-muted-foreground space-y-1.5 mb-6 flex-1">
-                    {userType.features.map((feature, index) => (
-                      <li key={index} className="flex items-center gap-2">
-                        <div className={`h-1 w-1 rounded-full ${userType.accentDot}`} />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <div className="space-y-2">
-                    <Button
-                      className="w-full rounded-full"
-                      size="sm"
-                      onClick={() => navigate(userType.loginPath)}
-                    >
-                      Login
-                      <ArrowRight className="h-4 w-4 ml-1.5" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full rounded-full"
-                      size="sm"
-                      onClick={() => navigate(userType.demoPath)}
-                    >
-                      <Play className="h-4 w-4 mr-1.5" />
-                      Try Demo
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 flex items-center justify-between gap-4">
+            <div>
+              <p className="font-medium text-slate-900 text-sm">Forgot your portal?</p>
+              <p className="text-xs text-slate-500 mt-0.5">Your school administrator can resend access details.</p>
+            </div>
+            <Button asChild size="sm" variant="outline" className="rounded-full shrink-0">
+              <a href="mailto:info@knctED.app?subject=Login%20help">
+                Email support
+              </a>
+            </Button>
           </div>
         </div>
       </main>
+
+      <MarketingFooter />
     </div>
   );
 }
