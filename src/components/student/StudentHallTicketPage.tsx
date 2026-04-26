@@ -9,16 +9,33 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useStudentSeatAllocations } from '@/hooks/useSeatAllocations';
 import { useExams } from '@/hooks/useExams';
 import { useSchoolInfo } from '@/hooks/useSchoolSettings';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoStudentSeatAllocations, demoSchoolInfo, demoAdminExams } from '@/lib/demo-data';
 import { HallTicketPDF, type HallTicketData } from '@/components/pdf/HallTicketPDF';
 import { downloadPdf } from '@/lib/pdfDownload';
 import { toast } from 'sonner';
 
 export function StudentHallTicketPage() {
   const { user } = useAuth();
-  const { data: school } = useSchoolInfo();
-  const { data: exams } = useExams();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'student';
+  const { data: schoolReal } = useSchoolInfo();
+  const { data: examsReal } = useExams();
+  const school = effectiveDemo ? (demoSchoolInfo as any) : schoolReal;
+  const exams = effectiveDemo
+    ? (demoAdminExams.map((e) => ({
+        id: e.id,
+        exam_type_id: e.exam_type === 'Mid-Term' ? 'et2' : e.exam_type === 'Unit Test 1' ? 'et1' : 'et3',
+        class_id: 'demo-class-8b',
+        exam_date: e.exam_date,
+        start_time: e.start_time,
+        end_time: e.end_time,
+        room: e.room,
+        subject: { name: e.subject },
+      })) as any)
+    : examsReal;
 
-  const { data: student, isLoading: studentLoading } = useQuery({
+  const { data: studentReal, isLoading: studentLoadingReal } = useQuery({
     queryKey: ['student-record', user?.id],
     queryFn: async () => {
       if (!user) return null;
@@ -34,12 +51,25 @@ export function StudentHallTicketPage() {
       if (error) return null;
       return data as any;
     },
-    enabled: !!user,
+    enabled: !!user && !effectiveDemo,
   });
+  const student = effectiveDemo
+    ? {
+        id: 'demo-student-1',
+        roll_number: '15',
+        admission_number: 'ADM2023001',
+        class_id: 'demo-class-8b',
+        profile: { full_name: 'Aarav Sharma' },
+        class: { name: '8', section: 'B' },
+      }
+    : studentReal;
+  const studentLoading = effectiveDemo ? false : studentLoadingReal;
 
-  const { data: allocations, isLoading: allocLoading } = useStudentSeatAllocations(
-    student?.id || null,
+  const { data: allocationsReal, isLoading: allocLoadingReal } = useStudentSeatAllocations(
+    effectiveDemo ? null : student?.id || null,
   );
+  const allocations = effectiveDemo ? (demoStudentSeatAllocations as any) : allocationsReal;
+  const allocLoading = effectiveDemo ? false : allocLoadingReal;
 
   const handleDownload = async (alloc: any) => {
     if (!student) return;

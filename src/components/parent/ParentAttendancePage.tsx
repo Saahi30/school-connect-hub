@@ -48,6 +48,8 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoLinkedChildren, demoStudentAttendance } from '@/lib/demo-data';
 
 interface AttendanceRecord {
   id: string;
@@ -80,8 +82,14 @@ function useChildAttendance(studentId: string | null) {
 }
 
 export function ParentAttendancePage() {
-  const { data: parent, isLoading: parentLoading } = useParentData();
-  const { data: children, isLoading: childrenLoading } = useLinkedChildren(parent?.id);
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'parent';
+
+  const { data: parent, isLoading: parentLoadingReal } = useParentData();
+  const { data: childrenReal, isLoading: childrenLoadingReal } = useLinkedChildren(effectiveDemo ? null : parent?.id);
+  const children = effectiveDemo ? (demoLinkedChildren as any) : childrenReal;
+  const parentLoading = effectiveDemo ? false : parentLoadingReal;
+  const childrenLoading = effectiveDemo ? false : childrenLoadingReal;
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
 
   const { data: settings } = useAttendanceSettings();
@@ -89,9 +97,11 @@ export function ParentAttendancePage() {
 
   const activeChildId = selectedChildId || children?.[0]?.student_id || null;
   const selectedChild = children?.find((c) => c.student_id === activeChildId);
-  const { data: attendance, isLoading: attendanceLoading } = useChildAttendance(activeChildId);
-  const { data: justifications } = useStudentJustifications(activeChildId);
-  useJustificationsRealtime(activeChildId);
+  const { data: attendanceReal, isLoading: attendanceLoadingReal } = useChildAttendance(effectiveDemo ? null : activeChildId);
+  const attendance = effectiveDemo ? (demoStudentAttendance as AttendanceRecord[]) : attendanceReal;
+  const attendanceLoading = effectiveDemo ? false : attendanceLoadingReal;
+  const { data: justifications } = useStudentJustifications(effectiveDemo ? null : activeChildId);
+  useJustificationsRealtime(effectiveDemo ? null : activeChildId);
 
   const [justifyFor, setJustifyFor] = useState<AttendanceRecord | null>(null);
   const [reason, setReason] = useState('');

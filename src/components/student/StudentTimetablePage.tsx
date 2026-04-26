@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Calendar, BookOpen, Clock, MapPin, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoStudentTimetableSlots, demoStudentClassSessions } from '@/lib/demo-data';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -134,12 +136,24 @@ function useWeekSessions(classId: string | null) {
 }
 
 export function StudentTimetablePage() {
-  const { data: studentClass, isLoading: classLoading } = useStudentClass();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'student';
+
+  const { data: studentClassReal, isLoading: classLoadingReal } = useStudentClass();
+  const studentClass = effectiveDemo
+    ? { class_id: 'demo-class-8b', class: { id: 'demo-class-8b', name: '8', section: 'B' } }
+    : studentClassReal;
+  const classLoading = effectiveDemo ? false : classLoadingReal;
+
   const classId = studentClass?.class_id || null;
   const classInfo = Array.isArray(studentClass?.class) ? studentClass.class[0] : studentClass?.class;
-  
-  const { data: timetable, isLoading: timetableLoading } = useStudentTimetable(classId);
-  const { data: sessions } = useWeekSessions(classId);
+
+  const { data: timetableReal, isLoading: timetableLoadingReal } = useStudentTimetable(effectiveDemo ? null : classId);
+  const { data: sessionsReal } = useWeekSessions(effectiveDemo ? null : classId);
+
+  const timetable = effectiveDemo ? (demoStudentTimetableSlots as TimetableSlot[]) : timetableReal;
+  const sessions = effectiveDemo ? (demoStudentClassSessions as ClassSession[]) : sessionsReal;
+  const timetableLoading = effectiveDemo ? false : timetableLoadingReal;
   
   const today = new Date().getDay();
   const currentDayIndex = today === 0 ? 6 : today - 1; // Convert Sunday=0 to index

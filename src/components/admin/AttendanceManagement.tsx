@@ -37,6 +37,8 @@ import {
   type AttendanceStatus,
 } from '@/lib/attendance';
 import { cn } from '@/lib/utils';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoAdminClasses, demoTeacherClassRoster } from '@/lib/demo-data';
 
 interface RowState {
   status: AttendanceStatus;
@@ -112,7 +114,13 @@ function useAttendanceRecords(classId: string | null, date: Date) {
 
 export function AttendanceManagement() {
   const queryClient = useQueryClient();
-  const { data: classes, isLoading: classesLoading } = useClasses();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'admin';
+  const { data: classesReal, isLoading: classesLoadingReal } = useClasses();
+  const classes = effectiveDemo
+    ? (demoAdminClasses.map((c) => ({ id: c.id, name: c.name, section: c.section, academic_year: '2024-2025' })) as any)
+    : classesReal;
+  const classesLoading = effectiveDemo ? false : classesLoadingReal;
 
   const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -120,9 +128,11 @@ export function AttendanceManagement() {
   const [updates, setUpdates] = useState<Map<string, RowState>>(new Map());
   const [openRemarksFor, setOpenRemarksFor] = useState<string | null>(null);
 
-  const { data: students, isLoading: studentsLoading } = useClassStudents(
-    selectedClassId || null,
+  const { data: studentsReal, isLoading: studentsLoadingReal } = useClassStudents(
+    effectiveDemo ? null : (selectedClassId || null),
   );
+  const students = effectiveDemo && selectedClassId ? (demoTeacherClassRoster as any) : studentsReal;
+  const studentsLoading = effectiveDemo ? false : studentsLoadingReal;
   const { data: attendanceRecords } = useAttendanceRecords(
     selectedClassId || null,
     selectedDate,

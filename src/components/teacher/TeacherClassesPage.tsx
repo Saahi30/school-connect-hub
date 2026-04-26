@@ -32,6 +32,8 @@ import { useTeacherData } from '@/hooks/useTeacherData';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoTeacherClasses, demoTeacherClassRoster } from '@/lib/demo-data';
 
 interface ClassStudent {
   id: string;
@@ -76,10 +78,17 @@ function useClassStudents(classId: string | null) {
 }
 
 export function TeacherClassesPage() {
-  const { data: teacherData, isLoading: teacherLoading } = useTeacherData();
-  const { data: classes, isLoading: classesLoading } = useTeacherClassesWithCounts(teacherData?.id);
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'teacher';
+  const { data: teacherData, isLoading: teacherLoadingReal } = useTeacherData();
+  const { data: classesReal, isLoading: classesLoadingReal } = useTeacherClassesWithCounts(effectiveDemo ? undefined : teacherData?.id);
+  const classes = effectiveDemo ? (demoTeacherClasses as TeacherClassData[]) : classesReal;
+  const teacherLoading = effectiveDemo ? false : teacherLoadingReal;
+  const classesLoading = effectiveDemo ? false : classesLoadingReal;
   const [selectedClass, setSelectedClass] = useState<TeacherClassData | null>(null);
-  const { data: students, isLoading: studentsLoading } = useClassStudents(selectedClass?.classId || null);
+  const { data: studentsReal, isLoading: studentsLoadingReal } = useClassStudents(effectiveDemo ? null : selectedClass?.classId || null);
+  const students = effectiveDemo && selectedClass ? (demoTeacherClassRoster as ClassStudent[]) : studentsReal;
+  const studentsLoading = effectiveDemo ? false : studentsLoadingReal;
 
   const isLoading = teacherLoading || classesLoading;
 

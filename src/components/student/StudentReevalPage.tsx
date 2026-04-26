@@ -11,6 +11,8 @@ import { Loader2, Scale, Send } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMyReevaluations, useCreateReevaluation, type ReevalStatus } from '@/hooks/useReevaluation';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoStudentReevaluations, demoStudentMarks } from '@/lib/demo-data';
 
 const statusBadge = (status: ReevalStatus) => {
   if (status === 'pending') return <Badge variant="secondary">Pending</Badge>;
@@ -23,10 +25,14 @@ const statusBadge = (status: ReevalStatus) => {
 
 export function StudentReevalPage() {
   const { user } = useAuth();
-  const { data: requests, isLoading } = useMyReevaluations();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'student';
+  const { data: requestsReal, isLoading: loadingReal } = useMyReevaluations();
+  const requests = effectiveDemo ? (demoStudentReevaluations as any) : requestsReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
   const create = useCreateReevaluation();
 
-  const { data: student } = useQuery({
+  const { data: studentReal } = useQuery({
     queryKey: ['student-record', user?.id],
     queryFn: async () => {
       if (!user) return null;
@@ -37,10 +43,11 @@ export function StudentReevalPage() {
         .single();
       return data;
     },
-    enabled: !!user,
+    enabled: !!user && !effectiveDemo,
   });
+  const student = effectiveDemo ? { id: 'demo-student-1' } : studentReal;
 
-  const { data: marks } = useQuery({
+  const { data: marksReal } = useQuery({
     queryKey: ['student-marks-for-reeval', student?.id],
     queryFn: async () => {
       if (!student) return [];
@@ -60,8 +67,9 @@ export function StudentReevalPage() {
         exam_type: Array.isArray(r.exam_type) ? r.exam_type[0] : r.exam_type,
       }));
     },
-    enabled: !!student,
+    enabled: !!student && !effectiveDemo,
   });
+  const marks = effectiveDemo ? (demoStudentMarks as any) : marksReal;
 
   const [dialogOpen, setDialogOpen] = useState<string | null>(null);
   const [reason, setReason] = useState('');

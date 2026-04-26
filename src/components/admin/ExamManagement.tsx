@@ -14,10 +14,30 @@ import { useExamTypes, useCreateExamType, useDeleteExamType, useExams, useCreate
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoExamTypes, demoAdminExams } from '@/lib/demo-data';
 
 export function ExamManagement() {
-  const { data: examTypes, isLoading: typesLoading } = useExamTypes();
-  const { data: exams, isLoading: examsLoading } = useExams();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'admin';
+  const { data: examTypesReal, isLoading: typesLoadingReal } = useExamTypes();
+  const { data: examsReal, isLoading: examsLoadingReal } = useExams();
+  const examTypes = effectiveDemo ? (demoExamTypes as any) : examTypesReal;
+  const exams = effectiveDemo
+    ? (demoAdminExams.map((e) => ({
+        id: e.id,
+        exam_date: e.exam_date,
+        start_time: e.start_time,
+        end_time: e.end_time,
+        room: e.room,
+        max_marks: e.max_marks,
+        exam_type: { name: e.exam_type },
+        class: { name: e.class.replace(/[A-Z]$/, ''), section: e.class.slice(-1) },
+        subject: { name: e.subject },
+      })) as any)
+    : examsReal;
+  const typesLoading = effectiveDemo ? false : typesLoadingReal;
+  const examsLoading = effectiveDemo ? false : examsLoadingReal;
   const createExamType = useCreateExamType();
   const deleteExamType = useDeleteExamType();
   const createExam = useCreateExam();

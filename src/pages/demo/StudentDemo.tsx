@@ -16,6 +16,15 @@ import { StudentExamsPage } from '@/components/student/StudentExamsPage';
 import { StudentLibraryPage } from '@/components/student/StudentLibraryPage';
 import { StudentTransportPage } from '@/components/student/StudentTransportPage';
 import { StudentPaymentPage } from '@/components/student/StudentPaymentPage';
+import { StudentResourcesPage } from '@/components/student/StudentResourcesPage';
+import { StudentHallTicketPage } from '@/components/student/StudentHallTicketPage';
+import { StudentReportCardPage } from '@/components/student/StudentReportCardPage';
+import { StudentOnlineExamsPage } from '@/components/student/StudentOnlineExamsPage';
+import { StudentRemedialPage } from '@/components/student/StudentRemedialPage';
+import { StudentReevalPage } from '@/components/student/StudentReevalPage';
+import { StudentBadgesPage } from '@/components/student/StudentBadgesPage';
+import { StudentMessagesPage } from '@/components/student/StudentMessagesPage';
+import { NotificationsInboxPage } from '@/components/notifications/NotificationsInboxPage';
 import { ProfilePage } from '@/components/profile/ProfilePage';
 
 export default function StudentDemo() {
@@ -36,13 +45,23 @@ export default function StudentDemo() {
           <Route path="timetable" element={<StudentTimetablePage />} />
           <Route path="homework" element={<StudentHomeworkPage />} />
           <Route path="exams" element={<StudentExamsPage isDemo />} />
+          <Route path="hall-tickets" element={<StudentHallTicketPage />} />
+          <Route path="online-exams" element={<StudentOnlineExamsPage />} />
+          <Route path="remedial" element={<StudentRemedialPage />} />
+          <Route path="reeval" element={<StudentReevalPage />} />
+          <Route path="badges" element={<StudentBadgesPage />} />
+          <Route path="report-card" element={<StudentReportCardPage />} />
           <Route path="announcements" element={<StudentAnnouncementsPage />} />
           <Route path="leave" element={<StudentLeavePage />} />
           <Route path="fees" element={<StudentFeePage />} />
           <Route path="payments" element={<StudentPaymentPage />} />
           <Route path="library" element={<StudentLibraryPage />} />
           <Route path="transport" element={<StudentTransportPage />} />
+          <Route path="resources" element={<StudentResourcesPage />} />
+          <Route path="messages" element={<StudentMessagesPage />} />
+          <Route path="notifications" element={<NotificationsInboxPage />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="*" element={<Navigate to="dashboard" replace />} />
         </Routes>
       </DashboardLayout>
       <MobileNav userType="student" isDemo />

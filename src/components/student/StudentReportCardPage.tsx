@@ -9,6 +9,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useExamTypes } from '@/hooks/useExams';
 import { useGradingScales } from '@/hooks/useGradingScales';
 import { useSchoolInfo } from '@/hooks/useSchoolSettings';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoSchoolInfo, demoExamTypes, demoGradingScales } from '@/lib/demo-data';
 import { buildReportCardData } from '@/lib/reportCardBuilder';
 import { ReportCardPDF } from '@/components/pdf/ReportCardPDF';
 import { downloadPdf } from '@/lib/pdfDownload';
@@ -18,14 +20,19 @@ const FULL_YEAR = '__full__';
 
 export function StudentReportCardPage() {
   const { user } = useAuth();
-  const { data: school } = useSchoolInfo();
-  const { data: examTypes } = useExamTypes();
-  const { data: bands } = useGradingScales();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'student';
+  const { data: schoolReal } = useSchoolInfo();
+  const { data: examTypesReal } = useExamTypes();
+  const { data: bandsReal } = useGradingScales();
+  const school = effectiveDemo ? (demoSchoolInfo as any) : schoolReal;
+  const examTypes = effectiveDemo ? (demoExamTypes as any) : examTypesReal;
+  const bands = effectiveDemo ? (demoGradingScales as any) : bandsReal;
 
   const [examTypeId, setExamTypeId] = useState<string>(FULL_YEAR);
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const { data: student, isLoading } = useQuery({
+  const { data: studentReal, isLoading: loadingReal } = useQuery({
     queryKey: ['student-record', user?.id],
     queryFn: async () => {
       if (!user) return null;
@@ -36,8 +43,10 @@ export function StudentReportCardPage() {
         .single();
       return data;
     },
-    enabled: !!user,
+    enabled: !!user && !effectiveDemo,
   });
+  const student = effectiveDemo ? { id: 'demo-student-1' } : studentReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
 
   const handleDownload = async () => {
     if (!student || !school || !bands) return;

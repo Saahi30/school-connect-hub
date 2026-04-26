@@ -83,7 +83,7 @@ export default function Login() {
     <div className="min-h-screen bg-white flex flex-col">
       <div
         className="relative"
-        style={{ background: "linear-gradient(160deg, #6366F1 0%, #7C6CF0 35%, #8B6FE8 65%, #A78BE0 100%)" }}
+        style={{ background: "linear-gradient(160deg, #4F55F0 0%, #5A4FF0 40%, #6E4FEA 75%, #7E4FE6 100%)" }}
       >
         <div
           aria-hidden

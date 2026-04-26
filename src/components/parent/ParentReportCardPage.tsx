@@ -8,6 +8,8 @@ import { useParentData, useLinkedChildren } from '@/hooks/useParentData';
 import { useExamTypes } from '@/hooks/useExams';
 import { useGradingScales } from '@/hooks/useGradingScales';
 import { useSchoolInfo } from '@/hooks/useSchoolSettings';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoLinkedChildren, demoSchoolInfo, demoExamTypes, demoGradingScales } from '@/lib/demo-data';
 import { buildReportCardData } from '@/lib/reportCardBuilder';
 import { ReportCardPDF } from '@/components/pdf/ReportCardPDF';
 import { downloadPdf } from '@/lib/pdfDownload';
@@ -16,11 +18,19 @@ import { toast } from 'sonner';
 const FULL_YEAR = '__full__';
 
 export function ParentReportCardPage() {
-  const { data: parent, isLoading: parentLoading } = useParentData();
-  const { data: children, isLoading: childrenLoading } = useLinkedChildren(parent?.id);
-  const { data: school } = useSchoolInfo();
-  const { data: examTypes } = useExamTypes();
-  const { data: bands } = useGradingScales();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'parent';
+  const { data: parent, isLoading: parentLoadingReal } = useParentData();
+  const { data: childrenReal, isLoading: childrenLoadingReal } = useLinkedChildren(effectiveDemo ? null : parent?.id);
+  const children = effectiveDemo ? (demoLinkedChildren as any) : childrenReal;
+  const parentLoading = effectiveDemo ? false : parentLoadingReal;
+  const childrenLoading = effectiveDemo ? false : childrenLoadingReal;
+  const { data: schoolReal } = useSchoolInfo();
+  const { data: examTypesReal } = useExamTypes();
+  const { data: bandsReal } = useGradingScales();
+  const school = effectiveDemo ? (demoSchoolInfo as any) : schoolReal;
+  const examTypes = effectiveDemo ? (demoExamTypes as any) : examTypesReal;
+  const bands = effectiveDemo ? (demoGradingScales as any) : bandsReal;
 
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [examTypeId, setExamTypeId] = useState<string>(FULL_YEAR);

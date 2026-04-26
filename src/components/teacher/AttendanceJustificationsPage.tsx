@@ -32,6 +32,8 @@ import {
   type AttendanceJustification,
   type JustificationStatus,
 } from '@/hooks/useAttendance';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoTeacherClasses, demoTeacherJustifications, demoTeacherStudentSummaries } from '@/lib/demo-data';
 
 interface StudentSummary {
   id: string;
@@ -80,20 +82,33 @@ function useStudentSummaries(studentIds: string[]) {
 }
 
 export function AttendanceJustificationsPage() {
-  const { data: teacherClasses, isLoading: classesLoading } = useTeacherClasses(true);
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'teacher';
+  const { data: teacherClassesReal, isLoading: classesLoadingReal } = useTeacherClasses(true);
+  const teacherClasses = effectiveDemo
+    ? (demoTeacherClasses.filter((c) => c.isClassTeacher).map((c) => ({
+        class_id: c.classId, is_class_teacher: c.isClassTeacher, subject_id: 'sub-0',
+        class: { name: c.className, section: c.section }, subject: { name: c.subjectName },
+      })) as any)
+    : teacherClassesReal;
+  const classesLoading = effectiveDemo ? false : classesLoadingReal;
+
   const classIds = useMemo(
     () => (teacherClasses ?? []).map((c) => c.class_id),
     [teacherClasses],
   );
 
-  const { data: justifications, isLoading } = useTeacherPendingJustifications(classIds);
-  useJustificationsRealtime(classIds.join(',') || null);
+  const { data: justificationsReal, isLoading: loadingReal } = useTeacherPendingJustifications(effectiveDemo ? [] : classIds);
+  const justifications = effectiveDemo ? (demoTeacherJustifications as any) : justificationsReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
+  useJustificationsRealtime(effectiveDemo ? null : (classIds.join(',') || null));
 
   const studentIds = useMemo(
     () => Array.from(new Set((justifications ?? []).map((j) => j.student_id))),
     [justifications],
   );
-  const { data: studentMap } = useStudentSummaries(studentIds);
+  const { data: studentMapReal } = useStudentSummaries(effectiveDemo ? [] : studentIds);
+  const studentMap = effectiveDemo ? demoTeacherStudentSummaries : studentMapReal;
 
   const review = useReviewJustification();
 

@@ -6,12 +6,21 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Calendar, Clock, MapPin, Users, School } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoTeacherSchedule, demoTeacherClasses } from '@/lib/demo-data';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 export function TeacherSchedulePage() {
-  const { data: schedule, isLoading: scheduleLoading } = useTeacherSchedule();
-  const { data: teacherClasses } = useTeacherClasses();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'teacher';
+  const { data: scheduleReal, isLoading: scheduleLoadingReal } = useTeacherSchedule();
+  const { data: teacherClassesReal } = useTeacherClasses();
+  const schedule = effectiveDemo ? (demoTeacherSchedule as any) : scheduleReal;
+  const teacherClasses = effectiveDemo
+    ? (demoTeacherClasses.map((c) => ({ class_id: c.classId, is_class_teacher: c.isClassTeacher })) as any)
+    : teacherClassesReal;
+  const scheduleLoading = effectiveDemo ? false : scheduleLoadingReal;
   
   // Find classes where teacher is the class teacher
   const classTeacherClasses = teacherClasses?.filter(tc => tc.is_class_teacher) || [];

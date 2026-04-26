@@ -12,6 +12,8 @@ import {
   useRefreshTopicMastery,
   useRemedialResources,
 } from '@/hooks/useTopicMastery';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoStudentTopicMastery, demoStudentRemedialResources } from '@/lib/demo-data';
 
 const WEAK_THRESHOLD = 60;
 
@@ -30,6 +32,7 @@ function WeakTopicRow({
   masteryPct,
   correct,
   total,
+  demoMode,
 }: {
   topic: string;
   subject_id: string | null;
@@ -37,12 +40,16 @@ function WeakTopicRow({
   masteryPct: number;
   correct: number;
   total: number;
+  demoMode?: boolean;
 }) {
-  const { data: resources } = useRemedialResources({
+  const { data: resourcesReal } = useRemedialResources({
     topic,
     subject_id,
-    student_class_id: class_id,
+    student_class_id: demoMode ? null : class_id,
   });
+  const resources = demoMode
+    ? demoStudentRemedialResources.filter((r) => r.topic === topic)
+    : resourcesReal;
 
   return (
     <Card className="border-orange-200">
@@ -110,8 +117,10 @@ function WeakTopicRow({
 
 export function StudentRemedialPage() {
   const { user } = useAuth();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'student';
 
-  const { data: student, isLoading: studentLoading } = useQuery({
+  const { data: studentReal, isLoading: studentLoadingReal } = useQuery({
     queryKey: ['student-record', user?.id],
     queryFn: async () => {
       if (!user) return null;
@@ -122,11 +131,15 @@ export function StudentRemedialPage() {
         .single();
       return data;
     },
-    enabled: !!user,
+    enabled: !!user && !effectiveDemo,
   });
+  const student = effectiveDemo ? { id: 'demo-student-1', class_id: 'demo-class-8b' } : studentReal;
+  const studentLoading = effectiveDemo ? false : studentLoadingReal;
 
-  const { data: mastery, isLoading } = useTopicMastery(student?.id || null);
-  const refresh = useRefreshTopicMastery(student?.id || null);
+  const { data: masteryReal, isLoading: loadingReal } = useTopicMastery(effectiveDemo ? null : student?.id || null);
+  const mastery = effectiveDemo ? (demoStudentTopicMastery as any) : masteryReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
+  const refresh = useRefreshTopicMastery(effectiveDemo ? null : student?.id || null);
 
   const [showAll, setShowAll] = useState(false);
 
@@ -204,6 +217,7 @@ export function StudentRemedialPage() {
               masteryPct={Number(m.mastery_pct)}
               correct={m.correct_count}
               total={m.total_count}
+              demoMode={effectiveDemo}
             />
           ))}
         </div>

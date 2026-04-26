@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoParentChildren } from '@/lib/demo-data';
 
 interface LinkedChild {
   student_id: string;
@@ -43,10 +45,12 @@ interface LinkedChild {
 
 export function ParentChildrenPage() {
   const { user } = useAuth();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'parent';
 
-  const { data: children, isLoading } = useQuery({
+  const { data: childrenReal, isLoading: loadingReal } = useQuery({
     queryKey: ['parent-linked-children', user?.id],
-    enabled: !!user,
+    enabled: !!user && !effectiveDemo,
     queryFn: async (): Promise<LinkedChild[]> => {
       const { data: parent, error: pErr } = await supabase
         .from('parents')
@@ -123,6 +127,9 @@ export function ParentChildrenPage() {
       });
     },
   });
+
+  const children = effectiveDemo ? (demoParentChildren as LinkedChild[]) : childrenReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
 
   const initials = (name: string | null) =>
     (name || '?')

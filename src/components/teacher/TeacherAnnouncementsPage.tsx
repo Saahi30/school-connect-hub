@@ -16,12 +16,25 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Plus, Megaphone, Trash2, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoTeacherClasses, demoTeacherAnnouncements } from '@/lib/demo-data';
 
 export function TeacherAnnouncementsPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { data: teacherClasses } = useTeacherClasses();
-  const { data: announcements, isLoading } = useTeacherAnnouncements();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'teacher';
+  const { data: teacherClassesReal } = useTeacherClasses();
+  const teacherClasses = effectiveDemo
+    ? (demoTeacherClasses.map((c) => ({
+        class_id: c.classId,
+        is_class_teacher: c.isClassTeacher,
+        class: { name: c.className, section: c.section },
+      })) as any)
+    : teacherClassesReal;
+  const { data: announcementsReal, isLoading: loadingReal } = useTeacherAnnouncements();
+  const announcements = effectiveDemo ? (demoTeacherAnnouncements as any) : announcementsReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
   const createAnnouncement = useCreateAnnouncement();
   const deleteAnnouncement = useDeleteAnnouncement();
   const toggleAnnouncement = useToggleAnnouncement();

@@ -22,12 +22,30 @@ import {
   useDetachQuestion,
 } from '@/hooks/useOnlineExam';
 import { useQuestionBanks, useBankQuestions } from '@/hooks/useQuestionBank';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoAdminExams, demoTeacherClasses, demoOnlineExamsBuilder, demoQuestionBanks, demoBankQuestions, demoOnlineExamQuestions } from '@/lib/demo-data';
 
 export function OnlineExamBuilderPage() {
-  const { data: exams } = useExams();
-  const { data: teacherClasses } = useTeacherClasses();
-  const { data: onlineExams } = useOnlineExams();
-  const { data: banks } = useQuestionBanks();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'teacher';
+  const { data: examsReal } = useExams();
+  const { data: teacherClassesReal } = useTeacherClasses();
+  const { data: onlineExamsReal } = useOnlineExams();
+  const { data: banksReal } = useQuestionBanks();
+  const exams = effectiveDemo
+    ? (demoAdminExams.map((e) => ({
+        id: e.id, class_id: 'demo-class-8b', subject_id: e.subject === 'Mathematics' ? 'sub-0' : e.subject === 'Science' ? 'sub-1' : 'sub-2',
+        subject: { name: e.subject }, exam_type: { name: e.exam_type }, exam_date: e.exam_date,
+      })) as any)
+    : examsReal;
+  const teacherClasses = effectiveDemo
+    ? (demoTeacherClasses.map((c) => ({
+        class_id: c.classId, subject_id: 'sub-0', is_class_teacher: c.isClassTeacher,
+        class: { name: c.className, section: c.section }, subject: { name: c.subjectName },
+      })) as any)
+    : teacherClassesReal;
+  const onlineExams = effectiveDemo ? (demoOnlineExamsBuilder as any) : onlineExamsReal;
+  const banks = effectiveDemo ? (demoQuestionBanks as any) : banksReal;
 
   const teacherClassSubjects = useMemo(
     () =>
@@ -60,14 +78,20 @@ export function OnlineExamBuilderPage() {
   const [instructions, setInstructions] = useState('');
 
   const [selectedOnlineId, setSelectedOnlineId] = useState<string | null>(null);
-  const { data: attachedQs } = useOnlineExamQuestions(selectedOnlineId);
+  const { data: attachedQsReal } = useOnlineExamQuestions(effectiveDemo ? null : selectedOnlineId);
+  const attachedQs = effectiveDemo && selectedOnlineId
+    ? (demoOnlineExamQuestions[selectedOnlineId] || []) as any
+    : attachedQsReal;
   const attach = useAttachQuestions();
   const detach = useDetachQuestion();
 
   const [pickOpen, setPickOpen] = useState(false);
   const [pickBankId, setPickBankId] = useState<string>('');
   const [picked, setPicked] = useState<Set<string>>(new Set());
-  const { data: bankQs } = useBankQuestions(pickBankId || null);
+  const { data: bankQsReal } = useBankQuestions(effectiveDemo ? null : (pickBankId || null));
+  const bankQs = effectiveDemo && pickBankId
+    ? (demoBankQuestions[pickBankId] || []) as any
+    : bankQsReal;
 
   const handleCreate = async () => {
     if (!examId) {

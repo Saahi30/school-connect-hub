@@ -52,8 +52,12 @@ import {
 } from '@/hooks/useFeeManagement';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoAdminFeeInvoices, demoAdminFeeStats } from '@/lib/demo-data';
 
 export function FeeManagement() {
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'admin';
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInvoice, setSelectedInvoice] = useState<string | null>(null);
@@ -89,10 +93,18 @@ export function FeeManagement() {
 
   const { data: categories, isLoading: categoriesLoading } = useFeeCategories();
   const { data: structures, isLoading: structuresLoading } = useFeeStructures();
-  const { data: invoices, isLoading: invoicesLoading } = useAllInvoices(
+  const { data: invoicesReal, isLoading: invoicesLoadingReal } = useAllInvoices(
     statusFilter ? { status: statusFilter } : undefined
   );
-  const { data: stats, isLoading: statsLoading } = useFeeStats();
+  const { data: statsReal, isLoading: statsLoadingReal } = useFeeStats();
+  const invoices = effectiveDemo
+    ? (statusFilter
+        ? demoAdminFeeInvoices.filter((i) => i.status === statusFilter)
+        : demoAdminFeeInvoices) as any
+    : invoicesReal;
+  const stats = effectiveDemo ? (demoAdminFeeStats as any) : statsReal;
+  const invoicesLoading = effectiveDemo ? false : invoicesLoadingReal;
+  const statsLoading = effectiveDemo ? false : statsLoadingReal;
 
   // Fetch classes for the fee structure form
   const { data: classes } = useQuery({

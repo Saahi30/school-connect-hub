@@ -19,9 +19,15 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useStudentInvoices } from '@/hooks/useFeeManagement';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoStudentInvoices } from '@/lib/demo-data';
 
 export function StudentFeePage() {
-  const { data: invoices, isLoading } = useStudentInvoices();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'student';
+  const { data: invoicesReal, isLoading: loadingReal } = useStudentInvoices();
+  const invoices = effectiveDemo ? (demoStudentInvoices as any) : invoicesReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {

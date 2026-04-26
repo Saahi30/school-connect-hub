@@ -31,9 +31,15 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useMyLeaveRequests, useCreateLeaveRequest, LeaveRequest } from '@/hooks/useLeaveManagement';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoStudentLeaveRequests } from '@/lib/demo-data';
 
 export function StudentLeavePage() {
-  const { data: leaveRequests, isLoading } = useMyLeaveRequests();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'student';
+  const { data: leaveRequestsReal, isLoading: loadingReal } = useMyLeaveRequests();
+  const leaveRequests = effectiveDemo ? (demoStudentLeaveRequests as unknown as LeaveRequest[]) : leaveRequestsReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
   const createLeave = useCreateLeaveRequest();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({

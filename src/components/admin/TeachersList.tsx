@@ -12,13 +12,19 @@ import {
 } from '@/components/ui/table';
 import { useAllTeachers } from '@/hooks/useAdminStats';
 import { format } from 'date-fns';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoAdminTeachersList } from '@/lib/demo-data';
 
 interface TeachersListProps {
   searchQuery: string;
 }
 
 export function TeachersList({ searchQuery }: TeachersListProps) {
-  const { data: teachers, isLoading, error } = useAllTeachers();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'admin';
+  const { data: teachersReal, isLoading: loadingReal, error } = useAllTeachers();
+  const teachers = effectiveDemo ? (demoAdminTeachersList as any) : teachersReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
 
   if (isLoading) {
     return (

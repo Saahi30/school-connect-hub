@@ -15,10 +15,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCreateLeaveRequest, LeaveRequest } from '@/hooks/useLeaveManagement';
 import { format, differenceInDays } from 'date-fns';
 import { toast } from 'sonner';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoLinkedChildren, demoParentLeaveRequests } from '@/lib/demo-data';
 
 export function ParentLeavePage() {
-  const { data: parent, isLoading: parentLoading } = useParentData();
-  const { data: linkedChildren, isLoading: childrenLoading } = useLinkedChildren(parent?.id);
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'parent';
+  const { data: parent, isLoading: parentLoadingReal } = useParentData();
+  const { data: linkedChildrenReal, isLoading: childrenLoadingReal } = useLinkedChildren(effectiveDemo ? null : parent?.id);
+  const linkedChildren = effectiveDemo ? (demoLinkedChildren as any) : linkedChildrenReal;
+  const parentLoading = effectiveDemo ? false : parentLoadingReal;
+  const childrenLoading = effectiveDemo ? false : childrenLoadingReal;
   const createLeave = useCreateLeaveRequest();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedChild, setSelectedChild] = useState<string>('');
@@ -53,22 +60,27 @@ export function ParentLeavePage() {
 
   // Get leave requests for all children
   const userIds = Object.values(studentUserIds || {}).filter(Boolean) as string[];
-  const { data: childrenLeaveRequests = [], isLoading: leavesLoading } = useQuery({
+  const { data: childrenLeaveRequestsReal = [], isLoading: leavesLoadingReal } = useQuery({
     queryKey: ['children-leave-requests', userIds],
     queryFn: async () => {
       if (userIds.length === 0) return [];
-      
+
       const { data, error } = await supabase
         .from('leave_requests')
         .select('*')
         .in('user_id', userIds)
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       return data as LeaveRequest[];
     },
-    enabled: userIds.length > 0,
+    enabled: userIds.length > 0 && !effectiveDemo,
   });
+
+  const childrenLeaveRequests = effectiveDemo
+    ? (demoParentLeaveRequests as unknown as LeaveRequest[])
+    : childrenLeaveRequestsReal;
+  const leavesLoading = effectiveDemo ? false : leavesLoadingReal;
 
   if (parentLoading || childrenLoading || leavesLoading) {
     return (

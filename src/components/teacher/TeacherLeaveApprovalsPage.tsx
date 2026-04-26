@@ -24,9 +24,15 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useClassLeaveRequests, useUpdateLeaveStatus, LeaveRequest } from '@/hooks/useLeaveManagement';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoTeacherLeaveApprovals } from '@/lib/demo-data';
 
 export function TeacherLeaveApprovalsPage() {
-  const { data: leaveRequests, isLoading } = useClassLeaveRequests();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'teacher';
+  const { data: leaveRequestsReal, isLoading: loadingReal } = useClassLeaveRequests();
+  const leaveRequests = effectiveDemo ? (demoTeacherLeaveApprovals as unknown as LeaveRequest[]) : leaveRequestsReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
   const updateStatus = useUpdateLeaveStatus();
   const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');

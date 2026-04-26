@@ -14,9 +14,26 @@ import { UserManagement } from '@/components/admin/UserManagement';
 import { ClassManagement } from '@/components/admin/ClassManagement';
 import { TimetableManagement } from '@/components/admin/TimetableManagement';
 import { AttendanceManagement } from '@/components/admin/AttendanceManagement';
+import { AttendanceAnalyticsPage } from '@/components/admin/AttendanceAnalyticsPage';
+import { AttendanceSettingsPage } from '@/components/admin/AttendanceSettingsPage';
+import { AttendanceHolidaysPage } from '@/components/admin/AttendanceHolidaysPage';
+import { AttendanceBulkImportPage } from '@/components/admin/AttendanceBulkImportPage';
+import { AdmissionsQueuePage } from '@/components/admin/AdmissionsQueuePage';
+import { AdmissionsSettingsPage } from '@/components/admin/AdmissionsSettingsPage';
+import { GradingScalesPage } from '@/components/admin/GradingScalesPage';
+import { ResultWorkflowPage } from '@/components/admin/ResultWorkflowPage';
+import { EligibilityRulesPage } from '@/components/admin/EligibilityRulesPage';
+import { SeatAllocationPage } from '@/components/admin/SeatAllocationPage';
+import { ExamAnalyticsPage } from '@/components/admin/ExamAnalyticsPage';
+import { ProctorConsolePage } from '@/components/admin/ProctorConsolePage';
+import { ReevalQueuePage } from '@/components/admin/ReevalQueuePage';
 import { AnnouncementManagement } from '@/components/admin/AnnouncementManagement';
 import { LibraryManagement } from '@/components/admin/LibraryManagement';
 import { TransportManagement } from '@/components/admin/TransportManagement';
+import { BusDetailsPage } from '@/components/admin/BusDetailsPage';
+import { NotificationsInboxPage } from '@/components/notifications/NotificationsInboxPage';
+import { NotificationComposerPage } from '@/components/notifications/NotificationComposerPage';
+import { AdminMessagesPage } from '@/components/admin/AdminMessagesPage';
 
 export default function AdminDemo() {
   const { setDemoMode } = useDemo();
@@ -38,13 +55,31 @@ export default function AdminDemo() {
           <Route path="classes" element={<ClassManagement />} />
           <Route path="timetable" element={<TimetableManagement />} />
           <Route path="attendance" element={<AttendanceManagement />} />
+          <Route path="attendance/analytics" element={<AttendanceAnalyticsPage />} />
+          <Route path="attendance/settings" element={<AttendanceSettingsPage />} />
+          <Route path="attendance/holidays" element={<AttendanceHolidaysPage />} />
+          <Route path="attendance/import" element={<AttendanceBulkImportPage />} />
+          <Route path="admissions" element={<AdmissionsQueuePage />} />
+          <Route path="admissions/settings" element={<AdmissionsSettingsPage />} />
           <Route path="announcements" element={<AnnouncementManagement />} />
           <Route path="exams" element={<ExamManagement />} />
+          <Route path="exams/results" element={<ResultWorkflowPage />} />
+          <Route path="exams/grading" element={<GradingScalesPage />} />
+          <Route path="exams/eligibility" element={<EligibilityRulesPage />} />
+          <Route path="exams/seats" element={<SeatAllocationPage />} />
+          <Route path="exams/analytics" element={<ExamAnalyticsPage />} />
+          <Route path="exams/proctor" element={<ProctorConsolePage />} />
+          <Route path="exams/reeval" element={<ReevalQueuePage />} />
           <Route path="fees" element={<FeeManagement />} />
           <Route path="library" element={<LibraryManagement />} />
           <Route path="transport" element={<TransportManagement />} />
+          <Route path="transport/buses/:busId" element={<BusDetailsPage />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="settings" element={<SystemSettings />} />
+          <Route path="messages" element={<AdminMessagesPage />} />
+          <Route path="notifications" element={<NotificationsInboxPage />} />
+          <Route path="notifications/send" element={<NotificationComposerPage />} />
+          <Route path="*" element={<Navigate to="dashboard" replace />} />
         </Routes>
       </DashboardLayout>
       <MobileNav userType="admin" isDemo />

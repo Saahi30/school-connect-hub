@@ -24,28 +24,47 @@ import {
   type QuestionOption,
 } from '@/hooks/useQuestionBank';
 import { AiQuestionGeneratorDialog } from './AiQuestionGeneratorDialog';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoQuestionBanks, demoBankQuestions, demoAdminClasses } from '@/lib/demo-data';
 
 const OPTION_KEYS = ['A', 'B', 'C', 'D'];
 
 export function QuestionBankPage() {
-  const { data: banks, isLoading: banksLoading } = useQuestionBanks();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'teacher';
+  const { data: banksReal, isLoading: banksLoadingReal } = useQuestionBanks();
+  const banks = effectiveDemo ? (demoQuestionBanks as any) : banksReal;
+  const banksLoading = effectiveDemo ? false : banksLoadingReal;
   const createBank = useCreateBank();
   const deleteBank = useDeleteBank();
 
-  const { data: subjects } = useQuery({
+  const { data: subjectsReal } = useQuery({
     queryKey: ['subjects'],
     queryFn: async () => {
       const { data } = await supabase.from('subjects').select('*').order('name');
       return data || [];
     },
+    enabled: !effectiveDemo,
   });
-  const { data: classes } = useQuery({
+  const { data: classesReal } = useQuery({
     queryKey: ['classes'],
     queryFn: async () => {
       const { data } = await supabase.from('classes').select('*').order('name');
       return data || [];
     },
+    enabled: !effectiveDemo,
   });
+  const subjects = effectiveDemo
+    ? [
+        { id: 'sub-0', name: 'Mathematics', code: 'MATH' },
+        { id: 'sub-1', name: 'Science', code: 'SCI' },
+        { id: 'sub-2', name: 'English', code: 'ENG' },
+        { id: 'sub-3', name: 'Hindi', code: 'HIN' },
+      ]
+    : subjectsReal;
+  const classes = effectiveDemo
+    ? demoAdminClasses.map((c) => ({ id: c.id, name: c.name, section: c.section }))
+    : classesReal;
 
   const [bankOpen, setBankOpen] = useState(false);
   const [newBank, setNewBank] = useState<{
@@ -70,7 +89,11 @@ export function QuestionBankPage() {
   const [qCorrect, setQCorrect] = useState<string>('A');
   const [qTrueFalse, setQTrueFalse] = useState<'true' | 'false'>('true');
 
-  const { data: questions, isLoading: questionsLoading } = useBankQuestions(selectedBankId);
+  const { data: questionsReal, isLoading: questionsLoadingReal } = useBankQuestions(effectiveDemo ? null : selectedBankId);
+  const questions = effectiveDemo && selectedBankId
+    ? (demoBankQuestions[selectedBankId] || []) as any
+    : questionsReal;
+  const questionsLoading = effectiveDemo ? false : questionsLoadingReal;
   const createQuestion = useCreateQuestion();
   const deleteQuestion = useDeleteQuestion();
 

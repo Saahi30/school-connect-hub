@@ -58,6 +58,8 @@ import {
   type BusRoute,
 } from '@/hooks/useTransportation';
 import { Trash2 } from 'lucide-react';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoAdminTransport } from '@/lib/demo-data';
 import { AssignStudentDialog } from './transport/AssignStudentDialog';
 import { EditBusDialog } from './transport/EditBusDialog';
 import { ManageStopsDialog } from './transport/ManageStopsDialog';
@@ -67,6 +69,8 @@ import { EditRouteDialog } from './transport/EditRouteDialog';
 import { ConfirmAction } from './transport/ConfirmAction';
 
 export function TransportManagement() {
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'admin';
   const [isAddRouteOpen, setIsAddRouteOpen] = useState(false);
   const [isAddBusOpen, setIsAddBusOpen] = useState(false);
   const [editingBus, setEditingBus] = useState<BusRow | null>(null);
@@ -95,10 +99,22 @@ export function TransportManagement() {
     route_id: '',
   });
 
-  const { data: routes, isLoading: routesLoading } = useBusRoutes();
-  const { data: buses, isLoading: busesLoading } = useBuses();
+  const { data: routesReal, isLoading: routesLoadingReal } = useBusRoutes();
+  const { data: busesReal, isLoading: busesLoadingReal } = useBuses();
   const { data: assignments, isLoading: assignmentsLoading } = useAllStudentTransport();
-  const { data: stats, isLoading: statsLoading } = useTransportStats();
+  const { data: statsReal, isLoading: statsLoadingReal } = useTransportStats();
+  const routes = effectiveDemo
+    ? (demoAdminTransport.buses.map((b) => ({
+        id: b.id + '-route',
+        route_name: b.route_name,
+        stops_count: b.stops,
+      })) as any)
+    : routesReal;
+  const buses = effectiveDemo ? (demoAdminTransport.buses as any) : busesReal;
+  const stats = effectiveDemo ? (demoAdminTransport.stats as any) : statsReal;
+  const routesLoading = effectiveDemo ? false : routesLoadingReal;
+  const busesLoading = effectiveDemo ? false : busesLoadingReal;
+  const statsLoading = effectiveDemo ? false : statsLoadingReal;
 
   const createRoute = useCreateRoute();
   const createBus = useCreateBus();

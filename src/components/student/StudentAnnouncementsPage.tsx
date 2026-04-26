@@ -22,9 +22,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useStudentAnnouncements } from '@/hooks/useAnnouncements';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoStudentAnnouncementsList } from '@/lib/demo-data';
 
 export function StudentAnnouncementsPage() {
-  const { data: announcements, isLoading } = useStudentAnnouncements();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'student';
+  const { data: announcementsReal, isLoading: loadingReal } = useStudentAnnouncements();
+  const announcements = effectiveDemo ? (demoStudentAnnouncementsList as any) : announcementsReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
   const [searchQuery, setSearchQuery] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
 

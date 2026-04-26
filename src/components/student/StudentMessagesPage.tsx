@@ -17,12 +17,20 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoStudentMessages } from '@/lib/demo-data';
 
 export function StudentMessagesPage() {
   const { user } = useAuth();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'student';
   useMessagesRealtime();
-  const { data: conversations, isLoading: conversationsLoading } = useConversations();
-  const { data: teachers, isLoading: teachersLoading } = useAvailableTeachersForStudent();
+  const { data: conversationsReal, isLoading: conversationsLoadingReal } = useConversations();
+  const { data: teachersReal, isLoading: teachersLoadingReal } = useAvailableTeachersForStudent();
+  const conversations = effectiveDemo ? (demoStudentMessages.conversations as any) : conversationsReal;
+  const teachers = effectiveDemo ? (demoStudentMessages.teachers as any) : teachersReal;
+  const conversationsLoading = effectiveDemo ? false : conversationsLoadingReal;
+  const teachersLoading = effectiveDemo ? false : teachersLoadingReal;
   const sendMessage = useSendMessage();
   const markAsRead = useMarkAsRead();
 
@@ -31,7 +39,13 @@ export function StudentMessagesPage() {
   const [showTeachers, setShowTeachers] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { data: messages, isLoading: messagesLoading } = useMessages(selectedUserId);
+  const { data: messagesReal, isLoading: messagesLoadingReal } = useMessages(effectiveDemo ? null : selectedUserId);
+  const messages = effectiveDemo
+    ? selectedUserId
+      ? (demoStudentMessages.threadByUser[selectedUserId] || []) as any
+      : []
+    : messagesReal;
+  const messagesLoading = effectiveDemo ? false : messagesLoadingReal;
 
   useEffect(() => {
     if (selectedUserId) markAsRead.mutate(selectedUserId);

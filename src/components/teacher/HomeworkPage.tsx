@@ -43,6 +43,8 @@ import {
   type ClassRosterStudent,
 } from '@/hooks/useHomework';
 import { cn } from '@/lib/utils';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoTeacherClasses, demoTeacherHomework } from '@/lib/demo-data';
 
 interface HomeworkRow {
   id: string;
@@ -60,7 +62,19 @@ interface HomeworkRow {
 export function HomeworkPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { data: teacherClasses, isLoading: classesLoading } = useTeacherClasses();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'teacher';
+  const { data: teacherClassesReal, isLoading: classesLoadingReal } = useTeacherClasses();
+  const teacherClasses = effectiveDemo
+    ? (demoTeacherClasses.map((c) => ({
+        class_id: c.classId,
+        subject_id: 'sub-0',
+        is_class_teacher: c.isClassTeacher,
+        class: { name: c.className, section: c.section },
+        subject: { name: c.subjectName },
+      })) as unknown as TeacherClass[])
+    : teacherClassesReal;
+  const classesLoading = effectiveDemo ? false : classesLoadingReal;
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<TeacherClass | null>(null);
@@ -75,8 +89,9 @@ export function HomeworkPage() {
 
   const uploadFile = useUploadTeacherHomeworkFile();
 
-  const { data: homeworkList, isLoading: homeworkLoading } = useQuery({
+  const { data: homeworkListReal, isLoading: homeworkLoadingReal } = useQuery({
     queryKey: ['teacher-homework', user?.id],
+    enabled: !!user && !effectiveDemo,
     queryFn: async () => {
       if (!user) return [];
 
@@ -108,8 +123,10 @@ export function HomeworkPage() {
         subject: Array.isArray(item.subject) ? item.subject[0] : item.subject,
       })) as HomeworkRow[];
     },
-    enabled: !!user,
   });
+
+  const homeworkList = effectiveDemo ? (demoTeacherHomework as HomeworkRow[]) : homeworkListReal;
+  const homeworkLoading = effectiveDemo ? false : homeworkLoadingReal;
 
   const homeworkIds = useMemo(() => (homeworkList || []).map(h => h.id), [homeworkList]);
 

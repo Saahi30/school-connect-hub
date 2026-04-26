@@ -8,12 +8,16 @@ import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStudentAvailableOnlineExams, useStudentAttempts } from '@/hooks/useOnlineExam';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoStudentOnlineExams, demoStudentOnlineAttempts } from '@/lib/demo-data';
 
 export function StudentOnlineExamsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'student';
 
-  const { data: student } = useQuery({
+  const { data: studentReal } = useQuery({
     queryKey: ['student-record', user?.id],
     queryFn: async () => {
       if (!user) return null;
@@ -24,11 +28,15 @@ export function StudentOnlineExamsPage() {
         .single();
       return data;
     },
-    enabled: !!user,
+    enabled: !!user && !effectiveDemo,
   });
+  const student = effectiveDemo ? { id: 'demo-student-1', class_id: 'demo-class-8b' } : studentReal;
 
-  const { data: exams, isLoading } = useStudentAvailableOnlineExams(student?.class_id || null);
-  const { data: attempts } = useStudentAttempts(student?.id || null);
+  const { data: examsReal, isLoading: loadingReal } = useStudentAvailableOnlineExams(effectiveDemo ? null : student?.class_id || null);
+  const { data: attemptsReal } = useStudentAttempts(effectiveDemo ? null : student?.id || null);
+  const exams = effectiveDemo ? (demoStudentOnlineExams as any) : examsReal;
+  const attempts = effectiveDemo ? (demoStudentOnlineAttempts as any) : attemptsReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
 
   const now = new Date();
 

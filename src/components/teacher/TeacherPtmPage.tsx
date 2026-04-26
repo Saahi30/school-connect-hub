@@ -11,6 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Loader2, CalendarCheck, Eye, Check, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { usePtmRequests, useTeacherRespondPtm, type PtmStatus } from '@/hooks/usePtm';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoTeacherPtmRequests } from '@/lib/demo-data';
 
 const statusBadge = (s: PtmStatus) => {
   if (s === 'requested') return <Badge variant="secondary">Pending</Badge>;
@@ -21,7 +23,11 @@ const statusBadge = (s: PtmStatus) => {
 };
 
 export function TeacherPtmPage() {
-  const { data: requests, isLoading } = usePtmRequests();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'teacher';
+  const { data: requestsReal, isLoading: loadingReal } = usePtmRequests();
+  const requests = effectiveDemo ? (demoTeacherPtmRequests as any) : requestsReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
   const respond = useTeacherRespondPtm();
 
   const [filter, setFilter] = useState<PtmStatus | 'all'>('requested');

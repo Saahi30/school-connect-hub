@@ -30,6 +30,8 @@ import {
   getHomeworkFileSignedUrl,
   type HomeworkSubmission,
 } from '@/hooks/useHomework';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoStudentHomework, demoStudentHomeworkSubmissions } from '@/lib/demo-data';
 
 interface Homework {
   id: string;
@@ -43,6 +45,8 @@ interface Homework {
 
 export function StudentHomeworkPage() {
   const { user } = useAuth();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'student';
 
   const { data: studentData } = useQuery({
     queryKey: ['student-record', user?.id],
@@ -56,10 +60,10 @@ export function StudentHomeworkPage() {
       if (error) return null;
       return data;
     },
-    enabled: !!user,
+    enabled: !!user && !effectiveDemo,
   });
 
-  const { data: homework, isLoading } = useQuery({
+  const { data: homeworkRaw, isLoading: homeworkLoading } = useQuery({
     queryKey: ['student-homework', studentData?.class_id],
     queryFn: async (): Promise<Homework[]> => {
       if (!studentData?.class_id) return [];
@@ -88,11 +92,15 @@ export function StudentHomeworkPage() {
         subject: Array.isArray(item.subject) ? item.subject[0] : item.subject,
       })) as Homework[];
     },
-    enabled: !!studentData?.class_id,
+    enabled: !!studentData?.class_id && !effectiveDemo,
   });
 
+  const homework = effectiveDemo ? (demoStudentHomework as Homework[]) : homeworkRaw;
+  const isLoading = effectiveDemo ? false : homeworkLoading;
+
   const homeworkIds = useMemo(() => (homework || []).map(h => h.id), [homework]);
-  const { data: submissions } = useMyHomeworkSubmissionsByIds(homeworkIds);
+  const { data: submissionsReal } = useMyHomeworkSubmissionsByIds(effectiveDemo ? [] : homeworkIds);
+  const submissions = effectiveDemo ? (demoStudentHomeworkSubmissions as HomeworkSubmission[]) : submissionsReal;
   const submissionMap = useMemo(() => {
     const m = new Map<string, HomeworkSubmission>();
     for (const s of submissions || []) m.set(s.homework_id, s);

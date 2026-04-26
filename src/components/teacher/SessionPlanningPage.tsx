@@ -17,6 +17,8 @@ import { useTeacherSessions, useUpsertSession, type ClassSession } from '@/hooks
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoTeacherClasses, demoTeacherSessions } from '@/lib/demo-data';
 
 export function SessionPlanningPage() {
   const { user } = useAuth();
@@ -33,10 +35,18 @@ export function SessionPlanningPage() {
     learning_objectives: '',
   });
 
-  const { data: teacherClasses } = useTeacherClasses();
-  
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'teacher';
+  const { data: teacherClassesReal } = useTeacherClasses();
+  const teacherClasses = effectiveDemo
+    ? (demoTeacherClasses.map((c) => ({
+        class_id: c.classId, subject_id: 'sub-0', is_class_teacher: c.isClassTeacher,
+        class: { name: c.className, section: c.section }, subject: { name: c.subjectName },
+      })) as any)
+    : teacherClassesReal;
+
   // Get teacher record
-  const { data: teacher } = useQuery({
+  const { data: teacherReal } = useQuery({
     queryKey: ['teacher-record', user?.id],
     queryFn: async () => {
       if (!user) return null;
@@ -47,13 +57,16 @@ export function SessionPlanningPage() {
         .single();
       return data;
     },
-    enabled: !!user,
+    enabled: !!user && !effectiveDemo,
   });
+  const teacher = effectiveDemo ? { id: 'demo-teacher-1' } : teacherReal;
 
   const weekStart = format(startOfWeek(selectedDate, { weekStartsOn: 1 }), 'yyyy-MM-dd');
   const weekEnd = format(endOfWeek(selectedDate, { weekStartsOn: 1 }), 'yyyy-MM-dd');
-  
-  const { data: sessions, isLoading } = useTeacherSessions(weekStart, weekEnd);
+
+  const { data: sessionsReal, isLoading: loadingReal } = useTeacherSessions(weekStart, weekEnd);
+  const sessions = effectiveDemo ? (demoTeacherSessions as any) : sessionsReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
   const upsertSession = useUpsertSession();
 
   const resetForm = () => {

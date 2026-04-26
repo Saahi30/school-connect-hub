@@ -53,6 +53,8 @@ import {
 } from '@/hooks/useLibrary';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoAdminLibraryBooks, demoAdminLibraryStats } from '@/lib/demo-data';
 
 // Hook to get all students for issuing books
 function useAllStudents() {
@@ -91,6 +93,8 @@ function useAllStudents() {
 }
 
 export function LibraryManagement() {
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'admin';
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -111,11 +115,17 @@ export function LibraryManagement() {
     description: '',
   });
 
-  const { data: books, isLoading: booksLoading } = useBooks(categoryFilter !== 'all' ? categoryFilter : undefined);
+  const { data: booksReal, isLoading: booksLoadingReal } = useBooks(categoryFilter !== 'all' ? categoryFilter : undefined);
   const { data: categories } = useBookCategories();
-  const { data: issues, isLoading: issuesLoading } = useAllBookIssues(statusFilter !== 'all' ? statusFilter : undefined);
-  const { data: stats, isLoading: statsLoading } = useLibraryStats();
+  const { data: issuesReal, isLoading: issuesLoadingReal } = useAllBookIssues(statusFilter !== 'all' ? statusFilter : undefined);
+  const { data: statsReal, isLoading: statsLoadingReal } = useLibraryStats();
   const { data: students } = useAllStudents();
+  const books = effectiveDemo ? (demoAdminLibraryBooks as any) : booksReal;
+  const issues = effectiveDemo ? (demoAdminLibraryStats.recentIssues as any) : issuesReal;
+  const stats = effectiveDemo ? (demoAdminLibraryStats as any) : statsReal;
+  const booksLoading = effectiveDemo ? false : booksLoadingReal;
+  const issuesLoading = effectiveDemo ? false : issuesLoadingReal;
+  const statsLoading = effectiveDemo ? false : statsLoadingReal;
 
   const createBook = useCreateBook();
   const returnBook = useReturnBook();

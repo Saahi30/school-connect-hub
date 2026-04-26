@@ -29,11 +29,26 @@ import {
 import { useParentChildrenInvoices, FeeInvoice } from '@/hooks/useFeeManagement';
 import { useLinkedChildren } from '@/hooks/useParentData';
 import { useParentData } from '@/hooks/useParentData';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoLinkedChildren, demoStudentInvoices } from '@/lib/demo-data';
 
 export function ParentFeePage() {
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'parent';
   const { data: parentData } = useParentData();
-  const { data: children } = useLinkedChildren(parentData?.id);
-  const { data: allInvoices, isLoading } = useParentChildrenInvoices();
+  const { data: childrenReal } = useLinkedChildren(effectiveDemo ? null : parentData?.id);
+  const children = effectiveDemo ? (demoLinkedChildren as any) : childrenReal;
+  const { data: allInvoicesReal, isLoading: loadingReal } = useParentChildrenInvoices();
+  const allInvoices = effectiveDemo
+    ? (children?.flatMap((c: any) =>
+        demoStudentInvoices.map((inv) => ({
+          ...inv,
+          student_id: c.student_id,
+          student: { profile: { full_name: c.student.profile.full_name }, class: c.student.class },
+        })),
+      ) as unknown as FeeInvoice[])
+    : allInvoicesReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
 
   const formatCurrency = (amount: number) => {

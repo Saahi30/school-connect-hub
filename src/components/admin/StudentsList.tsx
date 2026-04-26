@@ -11,13 +11,19 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useAllStudents } from '@/hooks/useAdminStats';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoAdminStudentsList } from '@/lib/demo-data';
 
 interface StudentsListProps {
   searchQuery: string;
 }
 
 export function StudentsList({ searchQuery }: StudentsListProps) {
-  const { data: students, isLoading, error } = useAllStudents();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'admin';
+  const { data: studentsReal, isLoading: loadingReal, error } = useAllStudents();
+  const students = effectiveDemo ? (demoAdminStudentsList as any) : studentsReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
 
   if (isLoading) {
     return (

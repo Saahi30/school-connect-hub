@@ -14,6 +14,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTeacherClasses, useClassStudents, useExamTypes, type TeacherClass } from '@/hooks/useTeacherClasses';
 import { usePublicationStatus } from '@/hooks/useResultPublications';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoTeacherClasses, demoExamTypes, demoTeacherClassRoster } from '@/lib/demo-data';
 
 type FlagValue = 'absent' | 'malpractice' | 're_exam' | '';
 
@@ -42,8 +44,20 @@ const db = supabase as unknown as { from: (table: string) => any };
 export function BulkMarksUploadPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const { data: teacherClasses } = useTeacherClasses();
-  const { data: examTypes } = useExamTypes();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'teacher';
+  const { data: teacherClassesReal } = useTeacherClasses();
+  const { data: examTypesReal } = useExamTypes();
+  const teacherClasses = effectiveDemo
+    ? (demoTeacherClasses.map((c) => ({
+        class_id: c.classId,
+        subject_id: 'sub-0',
+        is_class_teacher: c.isClassTeacher,
+        class: { name: c.className, section: c.section },
+        subject: { name: c.subjectName },
+      })) as unknown as TeacherClass[])
+    : teacherClassesReal;
+  const examTypes = effectiveDemo ? (demoExamTypes as any) : examTypesReal;
 
   const [selectedClass, setSelectedClass] = useState<TeacherClass | null>(null);
   const [selectedExamType, setSelectedExamType] = useState<string>('');
@@ -51,11 +65,13 @@ export function BulkMarksUploadPage() {
   const [rows, setRows] = useState<ParsedRow[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
-  const { data: students } = useClassStudents(selectedClass?.class_id || null);
-  const { data: publication } = usePublicationStatus(
-    selectedExamType || null,
-    selectedClass?.class_id || null,
+  const { data: studentsReal } = useClassStudents(effectiveDemo ? null : selectedClass?.class_id || null);
+  const students = effectiveDemo && selectedClass ? (demoTeacherClassRoster as any) : studentsReal;
+  const { data: publicationReal } = usePublicationStatus(
+    effectiveDemo ? null : (selectedExamType || null),
+    effectiveDemo ? null : (selectedClass?.class_id || null),
   );
+  const publication = effectiveDemo ? { status: 'draft' } as any : publicationReal;
 
   const isLocked =
     publication?.status === 'moderated' || publication?.status === 'published';

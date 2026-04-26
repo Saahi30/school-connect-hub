@@ -33,10 +33,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useMyLeaveRequests, useCreateLeaveRequest, LeaveRequest } from '@/hooks/useLeaveManagement';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoTeacherLeaveRequests } from '@/lib/demo-data';
 
 export function TeacherLeavePage() {
   const { user } = useAuth();
-  const { data: leaveRequests, isLoading } = useMyLeaveRequests();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'teacher';
+  const { data: leaveRequestsReal, isLoading: loadingReal } = useMyLeaveRequests();
+  const leaveRequests = effectiveDemo
+    ? (demoTeacherLeaveRequests as unknown as LeaveRequest[])
+    : leaveRequestsReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
   const createLeave = useCreateLeaveRequest();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({

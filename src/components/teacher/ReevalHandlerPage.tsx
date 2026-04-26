@@ -14,6 +14,8 @@ import {
   useTeacherReviewReeval,
   type ReevalStatus,
 } from '@/hooks/useReevaluation';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoTeacherReevaluations } from '@/lib/demo-data';
 
 const statusBadge = (status: ReevalStatus) => {
   if (status === 'pending') return <Badge variant="secondary">Pending</Badge>;
@@ -25,7 +27,11 @@ const statusBadge = (status: ReevalStatus) => {
 };
 
 export function ReevalHandlerPage() {
-  const { data: requests, isLoading } = useMyReevaluations();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'teacher';
+  const { data: requestsReal, isLoading: loadingReal } = useMyReevaluations();
+  const requests = effectiveDemo ? (demoTeacherReevaluations as any) : requestsReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
   const review = useTeacherReviewReeval();
 
   const [filter, setFilter] = useState<ReevalStatus | 'all'>('pending');

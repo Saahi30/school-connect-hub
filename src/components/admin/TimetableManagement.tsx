@@ -12,6 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useClassTimetable, type TimetableSlot } from '@/hooks/useTimetable';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoStudentTimetableSlots, demoAdminClasses } from '@/lib/demo-data';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const DEFAULT_SLOTS = [
@@ -27,6 +29,8 @@ const DEFAULT_SLOTS = [
 
 export function TimetableManagement() {
   const queryClient = useQueryClient();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'admin';
   const [selectedClass, setSelectedClass] = useState<string>('');
   const [isAddingSlot, setIsAddingSlot] = useState(false);
   const [editingSlot, setEditingSlot] = useState<TimetableSlot | null>(null);
@@ -41,7 +45,7 @@ export function TimetableManagement() {
   });
 
   // Fetch classes
-  const { data: classes } = useQuery({
+  const { data: classesReal } = useQuery({
     queryKey: ['classes'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -51,7 +55,11 @@ export function TimetableManagement() {
       if (error) throw error;
       return data;
     },
+    enabled: !effectiveDemo,
   });
+  const classes = effectiveDemo
+    ? demoAdminClasses.map((c) => ({ id: c.id, name: c.name, section: c.section, academic_year: '2024-2025' }))
+    : classesReal;
 
   // Fetch subjects
   const { data: subjects } = useQuery({
@@ -96,7 +104,9 @@ export function TimetableManagement() {
   });
 
   // Fetch timetable for selected class
-  const { data: timetable, isLoading: timetableLoading } = useClassTimetable(selectedClass || null);
+  const { data: timetableReal, isLoading: timetableLoadingReal } = useClassTimetable(effectiveDemo ? null : (selectedClass || null));
+  const timetable = effectiveDemo && selectedClass ? (demoStudentTimetableSlots as unknown as TimetableSlot[]) : timetableReal;
+  const timetableLoading = effectiveDemo ? false : timetableLoadingReal;
 
   // Add/update slot mutation
   const upsertSlot = useMutation({

@@ -7,6 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStudentRanks } from '@/hooks/useClassRanks';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoStudentMarks, demoExamTypes, demoStudentRanks } from '@/lib/demo-data';
 
 interface Mark {
   id: string;
@@ -45,6 +47,8 @@ function getGradeColor(grade: string) {
 
 export function StudentMarksPage() {
   const { user } = useAuth();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'student';
 
   const { data: studentData } = useQuery({
     queryKey: ['student-record', user?.id],
@@ -58,10 +62,10 @@ export function StudentMarksPage() {
       if (error) return null;
       return data;
     },
-    enabled: !!user,
+    enabled: !!user && !effectiveDemo,
   });
 
-  const { data: marks, isLoading } = useQuery({
+  const { data: marksRaw, isLoading: marksLoading } = useQuery({
     queryKey: ['student-marks', studentData?.id],
     queryFn: async (): Promise<Mark[]> => {
       if (!studentData) return [];
@@ -89,10 +93,10 @@ export function StudentMarksPage() {
         exam_type: Array.isArray(item.exam_type) ? item.exam_type[0] : item.exam_type,
       })) as Mark[];
     },
-    enabled: !!studentData,
+    enabled: !!studentData && !effectiveDemo,
   });
 
-  const { data: examTypes } = useQuery({
+  const { data: examTypesRaw } = useQuery({
     queryKey: ['exam-types'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -102,9 +106,15 @@ export function StudentMarksPage() {
       if (error) return [];
       return data;
     },
+    enabled: !effectiveDemo,
   });
 
-  const { data: ranks } = useStudentRanks(studentData?.id || null);
+  const { data: ranksRaw } = useStudentRanks(effectiveDemo ? null : studentData?.id || null);
+
+  const marks: Mark[] | undefined = effectiveDemo ? (demoStudentMarks as Mark[]) : marksRaw;
+  const examTypes = effectiveDemo ? demoExamTypes : examTypesRaw;
+  const ranks = effectiveDemo ? demoStudentRanks : ranksRaw;
+  const isLoading = effectiveDemo ? false : marksLoading;
 
   // Calculate subject summaries
   const subjectSummaries: SubjectSummary[] = marks ? 

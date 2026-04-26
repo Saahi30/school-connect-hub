@@ -6,6 +6,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStudentBadges, type BadgeType } from '@/hooks/useBadges';
 import { format } from 'date-fns';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoStudentBadges } from '@/lib/demo-data';
 
 const ICON: Record<BadgeType, { icon: React.ElementType; bg: string; fg: string }> = {
   section_topper: { icon: Crown, bg: 'bg-yellow-50', fg: 'text-yellow-600' },
@@ -18,8 +20,10 @@ const ICON: Record<BadgeType, { icon: React.ElementType; bg: string; fg: string 
 
 export function StudentBadgesPage() {
   const { user } = useAuth();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'student';
 
-  const { data: student } = useQuery({
+  const { data: studentReal } = useQuery({
     queryKey: ['student-record', user?.id],
     queryFn: async () => {
       if (!user) return null;
@@ -30,10 +34,13 @@ export function StudentBadgesPage() {
         .single();
       return data;
     },
-    enabled: !!user,
+    enabled: !!user && !effectiveDemo,
   });
 
-  const { data: badges, isLoading } = useStudentBadges(student?.id || null);
+  const student = effectiveDemo ? { id: 'demo-student-1' } : studentReal;
+  const { data: badgesReal, isLoading: loadingReal } = useStudentBadges(effectiveDemo ? null : student?.id || null);
+  const badges = effectiveDemo ? (demoStudentBadges as any) : badgesReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
 
   if (isLoading) {
     return (

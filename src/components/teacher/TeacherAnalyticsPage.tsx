@@ -19,22 +19,38 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Loader2, BarChart3, TrendingUp, Users, CheckCircle2 } from 'lucide-react';
 import { useTeacherClasses, useExamTypes } from '@/hooks/useTeacherClasses';
 import { useExamAnalyticsData, summarize } from '@/hooks/useExamAnalytics';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoTeacherClasses, demoExamTypes, demoTeacherAnalyticsRows } from '@/lib/demo-data';
 
 const ALL = '__all__';
 const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
 
 export function TeacherAnalyticsPage() {
-  const { data: classes } = useTeacherClasses();
-  const { data: examTypes } = useExamTypes();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'teacher';
+  const { data: classesReal } = useTeacherClasses();
+  const { data: examTypesReal } = useExamTypes();
+  const classes = effectiveDemo
+    ? (demoTeacherClasses.map((c) => ({
+        class_id: c.classId,
+        subject_id: 'sub-0',
+        is_class_teacher: c.isClassTeacher,
+        class: { name: c.className, section: c.section },
+        subject: { name: c.subjectName },
+      })) as any)
+    : classesReal;
+  const examTypes = effectiveDemo ? (demoExamTypes as any) : examTypesReal;
 
   const [classId, setClassId] = useState<string>(ALL);
   const [examTypeId, setExamTypeId] = useState<string>(ALL);
 
-  const { data: rows, isLoading } = useExamAnalyticsData({
+  const { data: rowsReal, isLoading: loadingReal } = useExamAnalyticsData({
     exam_type_id: examTypeId === ALL ? null : examTypeId,
     class_id: classId === ALL ? null : classId,
     teacher_scope: true,
   });
+  const rows = effectiveDemo ? (demoTeacherAnalyticsRows as any) : rowsReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
 
   const teacherClassIds = useMemo(
     () => new Set((classes || []).map((c) => c.class_id)),

@@ -15,6 +15,8 @@ import { format } from 'date-fns';
 import { useParentData, useLinkedChildren } from '@/hooks/useParentData';
 import { usePtmRequests, useCreatePtm, useCancelPtm, type PtmStatus, type MeetingMode } from '@/hooks/usePtm';
 import { toast } from 'sonner';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoLinkedChildren, demoParentMeetingRequests } from '@/lib/demo-data';
 
 const statusBadge = (s: PtmStatus) => {
   if (s === 'requested') return <Badge variant="secondary">Requested</Badge>;
@@ -27,9 +29,14 @@ const statusBadge = (s: PtmStatus) => {
 const db = supabase as unknown as { from: (table: string) => any };
 
 export function ParentMeetingRequestPage() {
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'parent';
   const { data: parent } = useParentData();
-  const { data: children } = useLinkedChildren(parent?.id);
-  const { data: requests, isLoading } = usePtmRequests();
+  const { data: childrenReal } = useLinkedChildren(effectiveDemo ? null : parent?.id);
+  const children = effectiveDemo ? (demoLinkedChildren as any) : childrenReal;
+  const { data: requestsReal, isLoading: loadingReal } = usePtmRequests();
+  const requests = effectiveDemo ? (demoParentMeetingRequests as any) : requestsReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
   const create = useCreatePtm();
   const cancel = useCancelPtm();
 

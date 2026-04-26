@@ -30,6 +30,8 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useAllParents } from '@/hooks/useAdminStats';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoAdminParentsList } from '@/lib/demo-data';
 import { Link, Loader2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -133,7 +135,11 @@ function useLinkedChildrenForParent(parentId: string | null) {
 
 export function ParentsList({ searchQuery }: ParentsListProps) {
   const queryClient = useQueryClient();
-  const { data: parents, isLoading, error } = useAllParents();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'admin';
+  const { data: parentsReal, isLoading: loadingReal, error } = useAllParents();
+  const parents = effectiveDemo ? (demoAdminParentsList as any) : parentsReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
   const { data: allStudents } = useAllStudentsForLinking();
   
   const [selectedParentId, setSelectedParentId] = useState<string | null>(null);

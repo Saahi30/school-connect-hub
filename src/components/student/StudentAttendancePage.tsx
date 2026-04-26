@@ -46,6 +46,8 @@ import {
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoStudentAttendance } from '@/lib/demo-data';
 import {
   useStudentJustifications,
   useSubmitJustification,
@@ -73,6 +75,8 @@ interface AttendanceRecord {
 
 export function StudentAttendancePage() {
   const { user } = useAuth();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'student';
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [justifyFor, setJustifyFor] = useState<AttendanceRecord | null>(null);
   const [reason, setReason] = useState('');
@@ -81,7 +85,7 @@ export function StudentAttendancePage() {
   const { data: settings } = useAttendanceSettings();
   const { data: holidays, dateSet: holidayDates } = useHolidays();
 
-  const { data: studentData } = useQuery({
+  const { data: studentDataReal } = useQuery({
     queryKey: ['student-record', user?.id],
     queryFn: async () => {
       if (!user) return null;
@@ -93,12 +97,16 @@ export function StudentAttendancePage() {
       if (error) return null;
       return data;
     },
-    enabled: !!user,
+    enabled: !!user && !effectiveDemo,
   });
 
-  useJustificationsRealtime(studentData?.id ?? null);
+  const studentData = effectiveDemo
+    ? { id: 'demo-student-1', class_id: 'demo-class-8b', roll_number: '15', class: { name: '8', section: 'B' } }
+    : studentDataReal;
 
-  const { data: attendance, isLoading } = useQuery({
+  useJustificationsRealtime(effectiveDemo ? null : studentData?.id ?? null);
+
+  const { data: attendanceRaw, isLoading: attendanceLoading } = useQuery({
     queryKey: ['student-attendance', studentData?.id, format(currentMonth, 'yyyy-MM')],
     queryFn: async (): Promise<AttendanceRecord[]> => {
       if (!studentData) return [];
@@ -117,10 +125,13 @@ export function StudentAttendancePage() {
       }
       return (data || []) as AttendanceRecord[];
     },
-    enabled: !!studentData,
+    enabled: !!studentData && !effectiveDemo,
   });
 
-  const { data: justifications } = useStudentJustifications(studentData?.id ?? null);
+  const attendance = effectiveDemo ? (demoStudentAttendance as AttendanceRecord[]) : attendanceRaw;
+  const isLoading = effectiveDemo ? false : attendanceLoading;
+
+  const { data: justifications } = useStudentJustifications(effectiveDemo ? null : studentData?.id ?? null);
   const submitJustification = useSubmitJustification();
 
   const stats = useMemo(

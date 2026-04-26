@@ -34,6 +34,8 @@ import {
   type TeacherClass,
 } from '@/hooks/useTeacherClasses';
 import { useAttendanceRealtime } from '@/hooks/useAttendance';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoTeacherClasses, demoTeacherClassRoster } from '@/lib/demo-data';
 import {
   type AttendanceStatus,
   ATTENDANCE_STATUSES,
@@ -49,7 +51,21 @@ interface RowState {
 export function AttendancePage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { data: teacherClasses, isLoading: classesLoading } = useTeacherClasses(true);
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'teacher';
+  const { data: teacherClassesReal, isLoading: classesLoadingReal } = useTeacherClasses(true);
+  const teacherClasses = effectiveDemo
+    ? (demoTeacherClasses
+        .filter((c) => c.isClassTeacher)
+        .map((c) => ({
+          class_id: c.classId,
+          subject_id: 'sub-0',
+          is_class_teacher: c.isClassTeacher,
+          class: { name: c.className, section: c.section },
+          subject: { name: c.subjectName },
+        })) as unknown as TeacherClass[])
+    : teacherClassesReal;
+  const classesLoading = effectiveDemo ? false : classesLoadingReal;
 
   const [selectedClass, setSelectedClass] = useState<TeacherClass | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -58,9 +74,13 @@ export function AttendancePage() {
   const [existingAttendance, setExistingAttendance] = useState(false);
   const [openRemarksFor, setOpenRemarksFor] = useState<string | null>(null);
 
-  const { data: students, isLoading: studentsLoading } = useClassStudents(
-    selectedClass?.class_id || null,
+  const { data: studentsReal, isLoading: studentsLoadingReal } = useClassStudents(
+    effectiveDemo ? null : selectedClass?.class_id || null,
   );
+  const students = effectiveDemo && selectedClass
+    ? (demoTeacherClassRoster as any)
+    : studentsReal;
+  const studentsLoading = effectiveDemo ? false : studentsLoadingReal;
 
   useAttendanceRealtime(selectedClass?.class_id ?? null, selectedDate);
 

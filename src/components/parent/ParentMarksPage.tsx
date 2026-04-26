@@ -22,6 +22,8 @@ import {
 } from '@/components/ui/table';
 import { Loader2, FileText, TrendingUp, Award, Trophy } from 'lucide-react';
 import { useStudentRanks } from '@/hooks/useClassRanks';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoLinkedChildren, demoStudentMarks, demoStudentRanks } from '@/lib/demo-data';
 
 interface Mark {
   id: string;
@@ -71,13 +73,23 @@ function useChildMarks(studentId: string | null) {
 }
 
 export function ParentMarksPage() {
-  const { data: parent, isLoading: parentLoading } = useParentData();
-  const { data: children, isLoading: childrenLoading } = useLinkedChildren(parent?.id);
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'parent';
+
+  const { data: parent, isLoading: parentLoadingReal } = useParentData();
+  const { data: childrenReal, isLoading: childrenLoadingReal } = useLinkedChildren(effectiveDemo ? null : parent?.id);
+  const children = effectiveDemo ? (demoLinkedChildren as any) : childrenReal;
+  const parentLoading = effectiveDemo ? false : parentLoadingReal;
+  const childrenLoading = effectiveDemo ? false : childrenLoadingReal;
+
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
-  
+
   const activeChildId = selectedChildId || children?.[0]?.student_id || null;
-  const { data: marks, isLoading: marksLoading } = useChildMarks(activeChildId);
-  const { data: ranks } = useStudentRanks(activeChildId);
+  const { data: marksReal, isLoading: marksLoadingReal } = useChildMarks(effectiveDemo ? null : activeChildId);
+  const { data: ranksReal } = useStudentRanks(effectiveDemo ? null : activeChildId);
+  const marks = effectiveDemo ? (demoStudentMarks as Mark[]) : marksReal;
+  const ranks = effectiveDemo ? demoStudentRanks : ranksReal;
+  const marksLoading = effectiveDemo ? false : marksLoadingReal;
 
   const selectedChild = children?.find(c => c.student_id === activeChildId);
 

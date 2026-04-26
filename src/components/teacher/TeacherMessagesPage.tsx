@@ -20,16 +20,28 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoTeacherMessages } from '@/lib/demo-data';
 
 type ContactGroup = 'parents' | 'students' | 'admins';
 
 export function TeacherMessagesPage() {
   const { user } = useAuth();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'teacher';
   useMessagesRealtime();
-  const { data: conversations, isLoading: conversationsLoading } = useConversations();
-  const { data: parents, isLoading: parentsLoading } = useAvailableParents();
-  const { data: students, isLoading: studentsLoading } = useAvailableStudentsForTeacher();
-  const { data: admins, isLoading: adminsLoading } = useAvailableAdmins();
+  const { data: conversationsReal, isLoading: conversationsLoadingReal } = useConversations();
+  const { data: parentsReal, isLoading: parentsLoadingReal } = useAvailableParents();
+  const { data: studentsReal, isLoading: studentsLoadingReal } = useAvailableStudentsForTeacher();
+  const { data: adminsReal, isLoading: adminsLoadingReal } = useAvailableAdmins();
+  const conversations = effectiveDemo ? (demoTeacherMessages.conversations as any) : conversationsReal;
+  const parents = effectiveDemo ? (demoTeacherMessages.parents as any) : parentsReal;
+  const students = effectiveDemo ? (demoTeacherMessages.students as any) : studentsReal;
+  const admins = effectiveDemo ? (demoTeacherMessages.admins as any) : adminsReal;
+  const conversationsLoading = effectiveDemo ? false : conversationsLoadingReal;
+  const parentsLoading = effectiveDemo ? false : parentsLoadingReal;
+  const studentsLoading = effectiveDemo ? false : studentsLoadingReal;
+  const adminsLoading = effectiveDemo ? false : adminsLoadingReal;
   const sendMessage = useSendMessage();
   const markAsRead = useMarkAsRead();
 
@@ -39,7 +51,13 @@ export function TeacherMessagesPage() {
   const [group, setGroup] = useState<ContactGroup>('parents');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { data: messages, isLoading: messagesLoading } = useMessages(selectedUserId);
+  const { data: messagesReal, isLoading: messagesLoadingReal } = useMessages(effectiveDemo ? null : selectedUserId);
+  const messages = effectiveDemo
+    ? selectedUserId
+      ? (demoTeacherMessages.threadByUser[selectedUserId] || []) as any
+      : []
+    : messagesReal;
+  const messagesLoading = effectiveDemo ? false : messagesLoadingReal;
 
   useEffect(() => {
     if (selectedUserId) markAsRead.mutate(selectedUserId);

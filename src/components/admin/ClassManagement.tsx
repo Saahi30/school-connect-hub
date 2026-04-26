@@ -31,6 +31,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Plus, School, Users, BookOpen, Loader2, Trash2 } from 'lucide-react';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoAdminClasses } from '@/lib/demo-data';
 
 interface Class {
   id: string;
@@ -216,7 +218,13 @@ export function ClassManagement() {
 }
 
 function ClassesTab() {
-  const { data: classes, isLoading } = useClasses();
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'admin';
+  const { data: classesReal, isLoading: loadingReal } = useClasses();
+  const classes = effectiveDemo
+    ? (demoAdminClasses.map((c) => ({ id: c.id, name: c.name, section: c.section, academic_year: '2024-2025' })) as Class[])
+    : classesReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [name, setName] = useState('');
   const [section, setSection] = useState('');

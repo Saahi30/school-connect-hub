@@ -13,14 +13,18 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  useAllAnnouncements, 
-  useCreateAnnouncement, 
-  useDeleteAnnouncement, 
-  useToggleAnnouncement 
+import {
+  useAllAnnouncements,
+  useCreateAnnouncement,
+  useDeleteAnnouncement,
+  useToggleAnnouncement
 } from '@/hooks/useAnnouncements';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoAdminAnnouncements } from '@/lib/demo-data';
 
 export function AnnouncementManagement() {
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'admin';
   const [isCreating, setIsCreating] = useState(false);
   const [form, setForm] = useState({
     title: '',
@@ -31,7 +35,9 @@ export function AnnouncementManagement() {
     allClasses: true,
   });
 
-  const { data: announcements, isLoading } = useAllAnnouncements();
+  const { data: announcementsReal, isLoading: loadingReal } = useAllAnnouncements();
+  const announcements = effectiveDemo ? (demoAdminAnnouncements as any) : announcementsReal;
+  const isLoading = effectiveDemo ? false : loadingReal;
   const createAnnouncement = useCreateAnnouncement();
   const deleteAnnouncement = useDeleteAnnouncement();
   const toggleAnnouncement = useToggleAnnouncement();

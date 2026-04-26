@@ -14,6 +14,8 @@ import {
 } from '@/components/ui/select';
 import { Loader2, BookOpen, Calendar, Clock } from 'lucide-react';
 import { format, isPast, isToday, differenceInDays } from 'date-fns';
+import { useDemo } from '@/contexts/DemoContext';
+import { demoLinkedChildren, demoStudentHomework, demoStudentHomeworkSubmissions } from '@/lib/demo-data';
 
 interface Homework {
   id: string;
@@ -79,13 +81,19 @@ function useChildHomework(classId: string | null, studentId: string | null) {
 }
 
 export function ParentHomeworkPage() {
-  const { data: parent, isLoading: parentLoading } = useParentData();
-  const { data: children, isLoading: childrenLoading } = useLinkedChildren(parent?.id);
+  const { isDemo, demoUserType } = useDemo();
+  const effectiveDemo = isDemo && demoUserType === 'parent';
+
+  const { data: parent, isLoading: parentLoadingReal } = useParentData();
+  const { data: childrenReal, isLoading: childrenLoadingReal } = useLinkedChildren(effectiveDemo ? null : parent?.id);
+  const children = effectiveDemo ? (demoLinkedChildren as any) : childrenReal;
+  const parentLoading = effectiveDemo ? false : parentLoadingReal;
+  const childrenLoading = effectiveDemo ? false : childrenLoadingReal;
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
-  
+
   const activeChildId = selectedChildId || children?.[0]?.student_id || null;
   const selectedChild = children?.find(c => c.student_id === activeChildId);
-  
+
   // Get the class_id for the selected child (need to fetch from students table)
   const { data: studentData } = useQuery({
     queryKey: ['student-class', activeChildId],
@@ -99,13 +107,21 @@ export function ParentHomeworkPage() {
       if (error) throw error;
       return data;
     },
-    enabled: !!activeChildId,
+    enabled: !!activeChildId && !effectiveDemo,
   });
 
-  const { data: homework, isLoading: homeworkLoading } = useChildHomework(
-    studentData?.class_id || null,
-    activeChildId
+  const { data: homeworkReal, isLoading: homeworkLoadingReal } = useChildHomework(
+    effectiveDemo ? null : studentData?.class_id || null,
+    effectiveDemo ? null : activeChildId
   );
+
+  const homework = effectiveDemo
+    ? (demoStudentHomework.map((hw) => ({
+        ...hw,
+        submission: demoStudentHomeworkSubmissions.find((s) => s.homework_id === hw.id) ?? undefined,
+      })) as Homework[])
+    : homeworkReal;
+  const homeworkLoading = effectiveDemo ? false : homeworkLoadingReal;
 
   if (parentLoading || childrenLoading) {
     return (
