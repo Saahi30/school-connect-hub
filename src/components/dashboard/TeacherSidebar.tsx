@@ -82,8 +82,8 @@ export function TeacherSidebar({ isDemo = false }: TeacherSidebarProps) {
       {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-teacher-gradient flex items-center justify-center">
-            <BookOpen className="h-6 w-6 text-white" />
+          <div className="h-10 w-10 flex items-center justify-center overflow-hidden">
+            <img src="/dashboard-logo.png" alt="KnctED Logo" className="h-full w-full object-contain" />
           </div>
           <div>
             <h2 className="font-semibold text-sm">Teacher Portal</h2>
