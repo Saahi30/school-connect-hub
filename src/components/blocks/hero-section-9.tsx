@@ -340,7 +340,7 @@ export const Logo = ({ className }: { className?: string }) => {
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <div className="relative flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-blue-600 via-purple-600 to-orange-500 shadow-sm">
-        <GraduationCap className="h-4 w-4 text-white" strokeWidth={2.5} />
+        <img src="/dashboard-logo.png" alt="Logo" className="h-4 w-4 object-contain" />
       </div>
       <span className="text-lg font-bold tracking-tight">
         <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-orange-500 bg-clip-text text-transparent">

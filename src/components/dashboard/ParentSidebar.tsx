@@ -68,7 +68,7 @@ export function ParentSidebar({ isDemo = false }: ParentSidebarProps) {
       {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 flex items-center justify-center overflow-hidden">
+          <div className="h-10 w-10 rounded-xl bg-parent-gradient flex items-center justify-center overflow-hidden p-1.5">
             <img src="/dashboard-logo.png" alt="KnctED Logo" className="h-full w-full object-contain" />
           </div>
           <div>
