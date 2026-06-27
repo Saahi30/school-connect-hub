@@ -62,12 +62,11 @@ export function Footer() {
 			<div className="grid w-full gap-8 xl:grid-cols-3 xl:gap-8">
 				<AnimatedContainer className="space-y-4">
 					<div className="flex items-center gap-2">
-						<div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-blue-600 via-purple-600 to-orange-500">
-							<img src="/dashboard-logo.png" alt="Logo" className="h-5 w-5 object-contain" />
+						<div className="flex h-8 w-8 items-center justify-center rounded-md bg-black">
+							<img src="/dashboard-logo.png" alt="Logo" className="h-6 w-6 object-contain" />
 						</div>
-						<span className="font-bold text-lg tracking-tight">
-							<span className="bg-gradient-to-r from-blue-600 via-purple-600 to-orange-500 bg-clip-text text-transparent">knct</span>
-							<span className="bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">ED</span>
+						<span className="font-bold text-lg tracking-tight text-slate-900 dark:text-white">
+							knctED
 						</span>
 					</div>
 					<p className="text-muted-foreground mt-8 text-sm md:mt-0">

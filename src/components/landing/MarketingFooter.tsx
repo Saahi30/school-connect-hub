@@ -8,12 +8,11 @@ export const MarketingFooter = () => {
         <div className="grid gap-10 lg:grid-cols-4">
           <div className="lg:col-span-1">
             <Link to="/" className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-blue-600 via-purple-600 to-orange-500">
-                <img src="/dashboard-logo.png" alt="Logo" className="h-4 w-4 object-contain" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-black">
+                <img src="/dashboard-logo.png" alt="Logo" className="h-5 w-5 object-contain" />
               </div>
-              <span className="text-lg font-bold tracking-tight">
-                <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-orange-500 bg-clip-text text-transparent">knct</span>
-                <span className="bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">ED</span>
+              <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+                knctED
               </span>
             </Link>
             <p className="mt-3 text-sm text-slate-500 max-w-xs">
