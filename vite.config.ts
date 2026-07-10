@@ -18,4 +18,22 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    chunkSizeWarningLimit: 2500,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("@react-pdf/renderer") || id.includes("pdfjs-dist") || id.includes("fontkit")) {
+              return "pdf";
+            }
+            if (id.includes("recharts") || id.includes("d3")) {
+              return "charts";
+            }
+            return "vendor";
+          }
+        },
+      },
+    },
+  },
 }));
